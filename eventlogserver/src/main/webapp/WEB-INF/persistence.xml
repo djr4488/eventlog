@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence  xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence
+              http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd"
+              version="2.1">
+    <persistence-unit name="forecast_persistence">
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+        <jta-data-source>jdbc/eventlogs</jta-data-source>
+        <class>org.djr.eventlog.store.DataPoint</class>
+        <class>org.djr.eventlog.store.EventLog</class>
+        <properties>
+            <property
+                    name="eclipselink.loggin.level.sql"
+                    value="FINE"/>
+            <property
+                    name="eclipselink.logging.parameters"
+                    value="true"/>
+            <property
+                    name="eclipselink.ddl-generation.output-mode"
+                    value="database"/>
+            <property
+                    name="eclipselink.ddl-generation"
+                    value="create-or-extend-tables"/>
+        </properties>
+    </persistence-unit>
+</persistence>
