@@ -9,8 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
@@ -21,7 +19,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-@ApplicationScoped
+@RequestScoped
 public class EventLogInterceptor {
     private static Logger log = LoggerFactory.getLogger(EventLogInterceptor.class);
     @Inject

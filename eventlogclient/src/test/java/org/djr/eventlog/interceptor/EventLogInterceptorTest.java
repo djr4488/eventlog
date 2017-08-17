@@ -67,6 +67,10 @@ public class EventLogInterceptorTest {
         assertTrue(elr.getDataPoints().values().contains("yes"));
         assertTrue(elr.getDataPoints().values().contains("3"));
         assertFalse(elr.getDataPoints().values().contains("no"));
+        assertEquals("ABC123", elr.getTrackingIdentifier());
+        assertEquals("eventLog", elr.getApplicationName());
+        assertEquals("testCase", elr.getEnvironment());
+        assertEquals("local_machine", elr.getServer());
     }
 
     @Test
@@ -84,5 +88,9 @@ public class EventLogInterceptorTest {
         assertEquals(2, elr.getDataPoints().size());
         assertTrue(elr.getDataPoints().values().contains("interceptingStructTypes"));
         assertEquals("InterceptedStruct[someValue=something,someIntValue=3,someBooleanValue=false]", elr.getDataPoints().get("org.djr.eventlog.interceptor.InterceptedStruct"));
+        assertEquals("ABC123", elr.getTrackingIdentifier());
+        assertEquals("eventLog", elr.getApplicationName());
+        assertEquals("testCase", elr.getEnvironment());
+        assertEquals("local_machine", elr.getServer());
     }
 }
