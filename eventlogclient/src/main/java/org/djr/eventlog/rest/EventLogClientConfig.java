@@ -5,7 +5,7 @@ import org.aeonbits.owner.Config;
 @Config.Sources({
         "classpath:EventLogClientConfig.properties"
 })
-public interface EventLogClientConfig {
+public interface EventLogClientConfig extends Config {
     @Config.DefaultValue("application/json")
     String contentType();
     @Config.DefaultValue("application/json")

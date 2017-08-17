@@ -1,5 +1,6 @@
 package org.djr.eventlog.interceptor;
 
+import org.djr.eventlog.Configurator;
 import org.djr.eventlog.annotations.EventLogParameter;
 import org.djr.eventlog.eventbus.EventLogMessage;
 import org.djr.eventlog.eventbus.EventLogService;
@@ -8,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
@@ -18,11 +21,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-@RequestScoped
+@ApplicationScoped
 public class EventLogInterceptor {
     private static Logger log = LoggerFactory.getLogger(EventLogInterceptor.class);
     @Inject
     private EventLogService eventLogService;
+    @Inject
+    private Configurator configurator;
 
     @AroundInvoke
     public Object aroundInvoke(InvocationContext invocationContext)
@@ -45,8 +50,9 @@ public class EventLogInterceptor {
             }
             idx++;
         }
-        EventLogRequest elr = new EventLogRequest(MDC.get("tracking_identifier"), new Date(), MDC.get("app_name"),
-                MDC.get("environment"), MDC.get("server_name"), "Method Intercept", null, null, dataPointMap);
+        EventLogInterceptorConfig config = configurator.getConfiguration(EventLogInterceptorConfig.class);
+        EventLogRequest elr = new EventLogRequest(MDC.get(config.trackingIdentifierKey()), new Date(), MDC.get(config.applicationNameKey()),
+                MDC.get(config.environmentKey()), MDC.get(config.serverKey()), "Method Intercept", null, null, dataPointMap);
         EventLogMessage elm = new EventLogMessage(elr);
         log.debug("generateEventLog() eventLogMessage:{}", elm);
         return elm;
