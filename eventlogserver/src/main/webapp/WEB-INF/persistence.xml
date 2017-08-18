@@ -4,9 +4,9 @@
               xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence
               http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd"
               version="2.1">
-    <persistence-unit name="forecast_persistence">
+    <persistence-unit name="eventlog">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-        <jta-data-source>jdbc/eventlogs</jta-data-source>
+        <jta-data-source>jdbc/eventlog</jta-data-source>
         <class>org.djr.eventlog.store.DataPoint</class>
         <class>org.djr.eventlog.store.EventLog</class>
         <properties>

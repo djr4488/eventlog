@@ -29,6 +29,7 @@ public class EventLogClient {
     }
 
     public EventLogResponse doPostEventLogRequest(EventLogRequest eventLogRequest) {
+        log.debug("doPostEventLogRequest() eventLogRequest:{}", eventLogRequest);
         try {
             Response<EventLogResponse> response = eventLogTransport.postEventLog(getHeaderMap(), eventLogRequest).execute();
             if (!response.isSuccessful()) {
