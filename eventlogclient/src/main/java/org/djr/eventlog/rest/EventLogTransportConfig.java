@@ -8,4 +8,6 @@ import org.aeonbits.owner.Config;
 public interface EventLogTransportConfig extends Config {
     @DefaultValue("localhost")
     String baseUrl();
+    @DefaultValue("true")
+    Boolean enableTrafficLogging();
 }

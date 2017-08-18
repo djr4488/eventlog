@@ -30,7 +30,8 @@ public class EventLogTransportProducer {
 
     @Produces
     public EventLogTransport getEventLogTransport() {
-        return TransportProducer.getTransport(getObjectMapper(), config.baseUrl()).create(EventLogTransport.class);
+        return TransportProducer.getTransport(getObjectMapper(), config.baseUrl(), config.enableTrafficLogging())
+                .create(EventLogTransport.class);
     }
 
     private ObjectMapper getObjectMapper() {

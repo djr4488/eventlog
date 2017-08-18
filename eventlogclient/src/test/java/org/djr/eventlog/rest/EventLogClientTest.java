@@ -1,6 +1,7 @@
 package org.djr.eventlog.rest;
 
 import okhttp3.MediaType;
+import okhttp3.Request;
 import okhttp3.ResponseBody;
 import org.djr.eventlog.Configurator;
 import org.djr.eventlog.EventLogClientException;
@@ -11,6 +12,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -34,6 +37,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(CdiRunner.class)
 public class EventLogClientTest {
+    private static Logger log = LoggerFactory.getLogger(EventLogClientTest.class);
     @Produces
     @Mock
     private EventLogTransport eventLogTransport;
@@ -168,7 +172,7 @@ public class EventLogClientTest {
     @Test
     public void testMockedService()
     throws IOException {
-        Retrofit retrofit = TransportProducer.getTransport(null, "http://www.test.com/");
+        Retrofit retrofit = TransportProducer.getTransport(null, "http://www.test.com/", true);
         NetworkBehavior networkBehavior = NetworkBehavior.create();
         MockRetrofit mockRetrofit = new MockRetrofit.Builder(retrofit)
                 .networkBehavior(networkBehavior)
@@ -180,6 +184,8 @@ public class EventLogClientTest {
         networkBehavior.setFailurePercent(0);
         Call<EventLogResponse> callResponse = mockEventLogEndpoint.postEventLog(null, eventLogRequest);
         assertNotNull(callResponse);
+        Request req = callResponse.request();
+        log.debug("testMockedService() request:{}", req);
         Response<EventLogResponse> elrResponse = callResponse.execute();
         assertNotNull(elrResponse);
         assertNotNull(elrResponse.body());
