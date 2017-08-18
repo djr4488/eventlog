@@ -4,6 +4,7 @@ import okhttp3.MediaType;
 import okhttp3.ResponseBody;
 import org.djr.eventlog.Configurator;
 import org.djr.eventlog.EventLogClientException;
+import org.djr.eventlog.TransportProducer;
 import org.jglue.cdiunit.CdiRunner;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,6 +13,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import retrofit2.Call;
 import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.mock.BehaviorDelegate;
+import retrofit2.mock.MockRetrofit;
+import retrofit2.mock.NetworkBehavior;
 
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
@@ -19,6 +24,7 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Date;
 
+import static junit.framework.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -157,5 +163,26 @@ public class EventLogClientTest {
         }
         EventLogResponse elr = eventLogClient.doPostEventLogRequest(new EventLogRequest("id", new Date(), "app", "env", "svr", "tc", null, null, null));
         assertTrue(elr.isStoredSuccessfully());
+    }
+
+    @Test
+    public void testMockedService()
+    throws IOException {
+        Retrofit retrofit = TransportProducer.getTransport(null, "http://www.test.com/");
+        NetworkBehavior networkBehavior = NetworkBehavior.create();
+        MockRetrofit mockRetrofit = new MockRetrofit.Builder(retrofit)
+                .networkBehavior(networkBehavior)
+                .build();
+        BehaviorDelegate<EventLogTransport> behaviorDelegate = mockRetrofit.create(EventLogTransport.class);
+        MockEventLogEndpoint mockEventLogEndpoint = new MockEventLogEndpoint(behaviorDelegate);
+        EventLogRequest eventLogRequest = new EventLogRequest("SUCCESS", new Date(), "eventLog", "test", "test", "testEC",
+                null, null, null);
+        networkBehavior.setFailurePercent(0);
+        Call<EventLogResponse> callResponse = mockEventLogEndpoint.postEventLog(null, eventLogRequest);
+        assertNotNull(callResponse);
+        Response<EventLogResponse> elrResponse = callResponse.execute();
+        assertNotNull(elrResponse);
+        assertNotNull(elrResponse.body());
+        assertTrue(elrResponse.body().isStoredSuccessfully());
     }
 }
