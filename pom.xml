@@ -9,9 +9,10 @@
     <packaging>pom</packaging>
     <version>1.0.0-SNAPSHOT</version>
     <modules>
-        <module>eventlogserver</module>
-        <module>eventlogmodels</module>
-        <module>eventlogclient</module>
+        <module>eventlog-server</module>
+        <module>eventlog-models</module>
+        <module>eventlog-client</module>
+        <module>eventlog-reporter</module>
     </modules>
 
     <properties>
