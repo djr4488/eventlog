@@ -23,6 +23,7 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -171,14 +172,24 @@ public class EventLogReporter extends ScheduledReporter {
     @Override
     public void report(SortedMap<String, Gauge> gauges, SortedMap<String, Counter> counters, SortedMap<String, Histogram> histograms, SortedMap<String, Meter> meters, SortedMap<String, Timer> timers) {
         log.debug("report() kicking off event log report");
+        String jvmUuid = UUID.randomUUID().toString();
         for (Map.Entry<String, Timer> entry : timers.entrySet()) {
-            logTimer(entry.getKey(), entry.getValue());
+            logTimer(entry.getKey(), entry.getValue(), jvmUuid);
+        }
+        for (Map.Entry<String, Meter> entry : meters.entrySet()) {
+            logMeter(entry.getKey(), entry.getValue(), jvmUuid);
+        }
+        for (Map.Entry<String, Histogram> entry : histograms.entrySet()) {
+            logHistogram(entry.getKey(), entry.getValue(), jvmUuid);
+        }
+        for (Map.Entry<String, Counter> entry : counters.entrySet()) {
+            logCounter(entry.getKey(), entry.getValue(), jvmUuid);
         }
         try {
             MetricsRegistryBean metricsRegistryBean = MetricsRegistryBean.getBeanByNameOfClass("metricsRegistryBean", MetricsRegistryBean.class);
             SortedMap<String, HealthCheck.Result> healthChecks = metricsRegistryBean.getHealthCheckRegistry().runHealthChecks();
             for (Map.Entry<String, HealthCheck.Result> entry : healthChecks.entrySet()) {
-                logHealthChecks(entry.getKey(), entry.getValue());
+                logHealthChecks(entry.getKey(), entry.getValue(), jvmUuid);
             }
         } catch (Exception ex) {
             EventLogRequest elr = new EventLogRequest(trackingIdentifier, System.currentTimeMillis(), applicationName, environment, server, "health", "metrics registry failed", ex.getMessage(), null);
@@ -186,11 +197,11 @@ public class EventLogReporter extends ScheduledReporter {
             eventLogService.publishEventLogMessage(elm);
         }
         for (Map.Entry<String, Gauge> entry : gauges.entrySet()) {
-            logGauge(entry.getKey(), entry.getValue());
+            logGauge(entry.getKey(), entry.getValue(), jvmUuid);
         }
     }
 
-    private void logTimer(String name, Timer timer) {
+    private void logTimer(String name, Timer timer, String jvmUuid) {
         log.debug("logTimer() name:{}, timer:{}", name, timer);
         final Snapshot snapshot = timer.getSnapshot();
         Map<String, String> dataPointMap = new HashMap<>();
@@ -211,13 +222,13 @@ public class EventLogReporter extends ScheduledReporter {
         dataPointMap.put("timer-fifteen-minute-rate", Double.toString(timer.getFifteenMinuteRate()));
         dataPointMap.put("timer-rate-unit", getRateUnit());
         dataPointMap.put("timer-duration-unit", getDurationUnit());
-        EventLogRequest elr = new EventLogRequest(trackingIdentifier, DateTime.now().getMillis(), applicationName,
-                environment, server, name, null, null, dataPointMap);
+        EventLogRequest elr = new EventLogRequest(isValidTrackingIdentifier() ? trackingIdentifier : jvmUuid,
+                DateTime.now().getMillis(), applicationName, environment, server, name, null, null, dataPointMap);
         EventLogMessage elm = new EventLogMessage(elr);
         eventLogService.publishEventLogMessage(elm);
     }
 
-    private void logHealthChecks(String name, HealthCheck.Result result) {
+    private void logHealthChecks(String name, HealthCheck.Result result, String jvmUuid) {
         log.debug("logHealthCheck() name:{}, result:{}", name, result);
         Map<String, String> dataPointMap = new HashMap<>();
         dataPointMap.put("health-result-is-healthy", Boolean.toString(result.isHealthy()));
@@ -228,7 +239,7 @@ public class EventLogReporter extends ScheduledReporter {
             busErrorCode = "Health Check";
             sysErrorCode = result.getMessage();
         }
-        EventLogRequest elr = new EventLogRequest(trackingIdentifier, DateTime.now().getMillis(), applicationName,
+        EventLogRequest elr = new EventLogRequest(isValidTrackingIdentifier() ? trackingIdentifier : jvmUuid, DateTime.now().getMillis(), applicationName,
                 environment, server, name, busErrorCode, sysErrorCode, dataPointMap);
         EventLogMessage elm = new EventLogMessage(elr);
         eventLogService.publishEventLogMessage(elm);
@@ -242,47 +253,59 @@ public class EventLogReporter extends ScheduledReporter {
         return stringBuilder.toString();
     }
 
-//    private void logMeter(String name, Meter meter) {
-//        loggerProxy.log(marker,
-//                "type=METER, name={}, count={}, mean_rate={}, m1={}, m5={}, m15={}, rate_unit={}",
-//                prefix(name),
-//                meter.getCount(),
-//                convertRate(meter.getMeanRate()),
-//                convertRate(meter.getOneMinuteRate()),
-//                convertRate(meter.getFiveMinuteRate()),
-//                convertRate(meter.getFifteenMinuteRate()),
-//                getRateUnit());
-//    }
-//
-//    private void logHistogram(String name, Histogram histogram) {
-//        final Snapshot snapshot = histogram.getSnapshot();
-//        loggerProxy.log(marker,
-//                "type=HISTOGRAM, name={}, count={}, min={}, max={}, mean={}, stddev={}, " +
-//                        "median={}, p75={}, p95={}, p98={}, p99={}, p999={}",
-//                prefix(name),
-//                histogram.getCount(),
-//                snapshot.getMin(),
-//                snapshot.getMax(),
-//                snapshot.getMean(),
-//                snapshot.getStdDev(),
-//                snapshot.getMedian(),
-//                snapshot.get75thPercentile(),
-//                snapshot.get95thPercentile(),
-//                snapshot.get98thPercentile(),
-//                snapshot.get99thPercentile(),
-//                snapshot.get999thPercentile());
-//    }
-//
-//    private void logCounter(String name, Counter counter) {
-//        loggerProxy.log(marker, "type=COUNTER, name={}, count={}", prefix(name), counter.getCount());
-//    }
-//
-    private void logGauge(String name, Gauge gauge) {
+    private void logMeter(String name, Meter meter, String jvmUuid) {
+        Map<String, String> dataPointMap = new HashMap<>();
+        dataPointMap.put("meter-count", Long.toString(meter.getCount()));
+        dataPointMap.put("meter-mean-rate", Double.toString(meter.getMeanRate()));
+        dataPointMap.put("meter-one-minute-rate", Double.toString(meter.getOneMinuteRate()));
+        dataPointMap.put("meter-five-minute-rate", Double.toString(meter.getFiveMinuteRate()));
+        dataPointMap.put("meter-fifteen-minute-rate", Double.toString(meter.getFifteenMinuteRate()));
+        dataPointMap.put("meter-rate-unit", getRateUnit());
+        EventLogRequest elr = new EventLogRequest(isValidTrackingIdentifier() ? trackingIdentifier : jvmUuid,
+                DateTime.now().getMillis(), applicationName, environment, server, name, null, null, dataPointMap);
+        EventLogMessage elm = new EventLogMessage(elr);
+        eventLogService.publishEventLogMessage(elm);
+    }
+
+    private void logHistogram(String name, Histogram histogram, String jvmUuid) {
+        final Snapshot snapshot = histogram.getSnapshot();
+        Map<String, String> dataPointMap = new HashMap<>();
+        dataPointMap.put("histogram-count", Long.toString(histogram.getCount()));
+        dataPointMap.put("histogram-min", Double.toString(snapshot.getMin()));
+        dataPointMap.put("histogram-max", Double.toString(snapshot.getMax()));
+        dataPointMap.put("histogram-mean", Double.toString(snapshot.getMean()));
+        dataPointMap.put("histogram-stddev", Double.toString(snapshot.getStdDev()));
+        dataPointMap.put("histogram-Median", Double.toString(snapshot.getMedian()));
+        dataPointMap.put("histogram-75th-percentile", Double.toString(snapshot.get75thPercentile()));
+        dataPointMap.put("histogram-95th-percentile", Double.toString(snapshot.get95thPercentile()));
+        dataPointMap.put("histogram-98th-percentile", Double.toString(snapshot.get98thPercentile()));
+        dataPointMap.put("histogram-99th-percentile", Double.toString(snapshot.get99thPercentile()));
+        dataPointMap.put("histogram-999th-percentile", Double.toString(snapshot.get999thPercentile()));
+        EventLogRequest elr = new EventLogRequest(isValidTrackingIdentifier() ? trackingIdentifier : jvmUuid,
+                DateTime.now().getMillis(), applicationName, environment, server, name, null, null, dataPointMap);
+        EventLogMessage elm = new EventLogMessage(elr);
+        eventLogService.publishEventLogMessage(elm);
+    }
+
+    private void logCounter(String name, Counter counter, String jvmUuid) {
+        Map<String, String> dataPointMap = new HashMap<>();
+        dataPointMap.put("counter-count", Long.toString(counter.getCount()));
+        EventLogRequest elr = new EventLogRequest(isValidTrackingIdentifier() ? trackingIdentifier : jvmUuid,
+                DateTime.now().getMillis(), applicationName, environment, server, name, null, null, dataPointMap);
+        EventLogMessage elm = new EventLogMessage(elr);
+        eventLogService.publishEventLogMessage(elm);
+    }
+
+    private void logGauge(String name, Gauge gauge, String jvmUuid) {
         Map<String, String> dataPointMap = new HashMap<>();
         dataPointMap.put(name, gauge.getValue().toString());
-        EventLogRequest elr = new EventLogRequest(trackingIdentifier, DateTime.now().getMillis(), applicationName,
+        EventLogRequest elr = new EventLogRequest(isValidTrackingIdentifier() ? trackingIdentifier : jvmUuid, DateTime.now().getMillis(), applicationName,
                 environment, server, name, null, null, dataPointMap);
         EventLogMessage elm = new EventLogMessage(elr);
         eventLogService.publishEventLogMessage(elm);
+    }
+
+    private boolean isValidTrackingIdentifier() {
+        return null != trackingIdentifier && !(0 < trackingIdentifier.length());
     }
 }
