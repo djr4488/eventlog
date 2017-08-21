@@ -1,6 +1,7 @@
 package org.djr.eventlog.interceptor;
 
 import org.djr.eventlog.Configurator;
+import org.djr.eventlog.EventLogConstants;
 import org.djr.eventlog.annotations.EventLogParameter;
 import org.djr.eventlog.eventbus.EventLogMessage;
 import org.djr.eventlog.eventbus.EventLogService;
@@ -24,8 +25,6 @@ public class EventLogInterceptor {
     private static Logger log = LoggerFactory.getLogger(EventLogInterceptor.class);
     @Inject
     private EventLogService eventLogService;
-    @Inject
-    private Configurator configurator;
 
     @AroundInvoke
     public Object aroundInvoke(InvocationContext invocationContext)
@@ -48,9 +47,9 @@ public class EventLogInterceptor {
             }
             idx++;
         }
-        EventLogInterceptorConfig config = configurator.getConfiguration(EventLogInterceptorConfig.class);
-        EventLogRequest elr = new EventLogRequest(MDC.get(config.trackingIdentifierKey()), ZonedDateTime.now().toInstant().toEpochMilli(), MDC.get(config.applicationNameKey()),
-                MDC.get(config.environmentKey()), MDC.get(config.serverKey()), "Method Intercept", null, null, dataPointMap);
+        EventLogRequest elr = new EventLogRequest(MDC.get(EventLogConstants.eventLogTrackingIdKey), ZonedDateTime.now().toInstant().toEpochMilli(),
+                MDC.get(EventLogConstants.eventLogApplicationNameKey), null, MDC.get(EventLogConstants.eventLogServerKey),
+                "Method Intercept", null, null, dataPointMap);
         EventLogMessage elm = new EventLogMessage(elr);
         log.debug("generateEventLog() eventLogMessage:{}", elm);
         return elm;

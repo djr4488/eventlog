@@ -2,6 +2,7 @@ package org.djr.eventlog.interceptor;
 
 
 import org.djr.eventlog.Configurator;
+import org.djr.eventlog.EventLogConstants;
 import org.djr.eventlog.eventbus.EventLogMessage;
 import org.djr.eventlog.eventbus.EventLogService;
 import org.djr.eventlog.rest.EventLogRequest;
@@ -44,22 +45,15 @@ public class EventLogInterceptorTest {
     public void setup() {
         log.debug("setup() setting up mocks and MDC values");
         MockitoAnnotations.initMocks(this);
-        MDC.put("trackingKey", "ABC123");
-        MDC.put("app_name", "eventLog");
-        MDC.put("env_name", "testCase");
-        MDC.put("server_name", "local_machine");
+        MDC.put(EventLogConstants.eventLogTrackingIdKey, "ABC123");
+        MDC.put(EventLogConstants.eventLogApplicationNameKey, "eventLog");
+        MDC.put(EventLogConstants.eventLogServerKey, "local_machine");
     }
 
     @Test
     public void testInterceptor() {
         ArgumentCaptor<EventLogMessage> elmArgumentCaptor = ArgumentCaptor.forClass(EventLogMessage.class);
         doNothing().when(eventLogService).publishEventLogMessage(elmArgumentCaptor.capture());
-        EventLogInterceptorConfig config = mock(EventLogInterceptorConfig.class);
-        when(config.trackingIdentifierKey()).thenReturn("trackingKey");
-        when(config.applicationNameKey()).thenReturn("app_name");
-        when(config.environmentKey()).thenReturn("env_name");
-        when(config.serverKey()).thenReturn("server_name");
-        when(configurator.getConfiguration(EventLogInterceptorConfig.class)).thenReturn(config);
         intercepted.interceptingMe("no", "yes", "no", 3);
         EventLogRequest elr = elmArgumentCaptor.getValue().getEventLogRequest();
         assertEquals(3, elr.getDataPoints().size());
@@ -69,7 +63,6 @@ public class EventLogInterceptorTest {
         assertFalse(elr.getDataPoints().values().contains("no"));
         assertEquals("ABC123", elr.getTrackingIdentifier());
         assertEquals("eventLog", elr.getApplicationName());
-        assertEquals("testCase", elr.getEnvironment());
         assertEquals("local_machine", elr.getServer());
     }
 
@@ -77,12 +70,6 @@ public class EventLogInterceptorTest {
     public void testInterceptorWithStruct() {
         ArgumentCaptor<EventLogMessage> elmArgumentCaptor = ArgumentCaptor.forClass(EventLogMessage.class);
         doNothing().when(eventLogService).publishEventLogMessage(elmArgumentCaptor.capture());
-        EventLogInterceptorConfig config = mock(EventLogInterceptorConfig.class);
-        when(config.trackingIdentifierKey()).thenReturn("trackingKey");
-        when(config.applicationNameKey()).thenReturn("app_name");
-        when(config.environmentKey()).thenReturn("env_name");
-        when(config.serverKey()).thenReturn("server_name");
-        when(configurator.getConfiguration(EventLogInterceptorConfig.class)).thenReturn(config);
         intercepted.interceptingStructTypes(new InterceptedStruct("something", 3, false));
         EventLogRequest elr = elmArgumentCaptor.getValue().getEventLogRequest();
         assertEquals(2, elr.getDataPoints().size());
@@ -90,7 +77,6 @@ public class EventLogInterceptorTest {
         assertEquals("InterceptedStruct[someValue=something,someIntValue=3,someBooleanValue=false]", elr.getDataPoints().get("org.djr.eventlog.interceptor.InterceptedStruct"));
         assertEquals("ABC123", elr.getTrackingIdentifier());
         assertEquals("eventLog", elr.getApplicationName());
-        assertEquals("testCase", elr.getEnvironment());
         assertEquals("local_machine", elr.getServer());
     }
 }

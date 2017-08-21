@@ -43,7 +43,6 @@ public class EventLogReporter extends ScheduledReporter {
     public static class Builder {
         private final MetricRegistry registry;
         private EventLogService eventLogService;
-        private String trackingIdentifier;
         private TimeUnit rateUnit;
         private TimeUnit durationUnit;
         private MetricFilter filter;
@@ -55,7 +54,6 @@ public class EventLogReporter extends ScheduledReporter {
             this.rateUnit = TimeUnit.SECONDS;
             this.durationUnit = TimeUnit.MILLISECONDS;
             this.filter = MetricFilter.ALL;
-            this.trackingIdentifier = "eventlog-metrics-reporter";
             this.applicationName = null;
             this.environment = null;
             try {
@@ -109,18 +107,8 @@ public class EventLogReporter extends ScheduledReporter {
             return this;
         }
 
-        public Builder trackingIdentifier(String trackingIdentifier) {
-            this.trackingIdentifier = trackingIdentifier;
-            return this;
-        }
-
         public Builder applicationName(String applicationName) {
             this.applicationName = applicationName;
-            return this;
-        }
-
-        public Builder environment(String environment) {
-            this.environment = environment;
             return this;
         }
 
@@ -140,12 +128,11 @@ public class EventLogReporter extends ScheduledReporter {
          * @return a {@link EventLogReporter}
          */
         public EventLogReporter build() {
-            return new EventLogReporter(registry, rateUnit, durationUnit, filter, trackingIdentifier,
+            return new EventLogReporter(registry, rateUnit, durationUnit, filter,
                     applicationName, environment, server, eventLogService);
         }
     }
 
-    private final String trackingIdentifier;
     private final String applicationName;
     private final String environment;
     private final String server;
@@ -156,13 +143,11 @@ public class EventLogReporter extends ScheduledReporter {
                              TimeUnit rateUnit,
                              TimeUnit durationUnit,
                              MetricFilter filter,
-                             String trackingIdentifier,
                              String applicationName,
                              String environment,
                              String server,
                              EventLogService eventLogService) {
         super(registry, "event-log-filter", filter, rateUnit, durationUnit);
-        this.trackingIdentifier = trackingIdentifier;
         this.applicationName = applicationName;
         this.environment = environment;
         this.server = server;
@@ -192,7 +177,7 @@ public class EventLogReporter extends ScheduledReporter {
                 logHealthChecks(entry.getKey(), entry.getValue(), jvmUuid);
             }
         } catch (Exception ex) {
-            EventLogRequest elr = new EventLogRequest(trackingIdentifier, System.currentTimeMillis(), applicationName, environment, server, "health", "metrics registry failed", ex.getMessage(), null);
+            EventLogRequest elr = new EventLogRequest(jvmUuid, System.currentTimeMillis(), applicationName, environment, server, "health", "metrics registry failed", ex.getMessage(), null);
             EventLogMessage elm = new EventLogMessage(elr);
             eventLogService.publishEventLogMessage(elm);
         }
@@ -222,8 +207,8 @@ public class EventLogReporter extends ScheduledReporter {
         dataPointMap.put("timer-fifteen-minute-rate", Double.toString(timer.getFifteenMinuteRate()));
         dataPointMap.put("timer-rate-unit", getRateUnit());
         dataPointMap.put("timer-duration-unit", getDurationUnit());
-        EventLogRequest elr = new EventLogRequest(isValidTrackingIdentifier() ? trackingIdentifier : jvmUuid,
-                DateTime.now().getMillis(), applicationName, environment, server, name, null, null, dataPointMap);
+        EventLogRequest elr = new EventLogRequest(jvmUuid, DateTime.now().getMillis(), applicationName, environment,
+                server, name, null, null, dataPointMap);
         EventLogMessage elm = new EventLogMessage(elr);
         eventLogService.publishEventLogMessage(elm);
     }
@@ -239,8 +224,8 @@ public class EventLogReporter extends ScheduledReporter {
             busErrorCode = "Health Check";
             sysErrorCode = result.getMessage();
         }
-        EventLogRequest elr = new EventLogRequest(isValidTrackingIdentifier() ? trackingIdentifier : jvmUuid, DateTime.now().getMillis(), applicationName,
-                environment, server, name, busErrorCode, sysErrorCode, dataPointMap);
+        EventLogRequest elr = new EventLogRequest( jvmUuid, DateTime.now().getMillis(), applicationName, environment,
+                server, name, busErrorCode, sysErrorCode, dataPointMap);
         EventLogMessage elm = new EventLogMessage(elr);
         eventLogService.publishEventLogMessage(elm);
     }
@@ -261,8 +246,8 @@ public class EventLogReporter extends ScheduledReporter {
         dataPointMap.put("meter-five-minute-rate", Double.toString(meter.getFiveMinuteRate()));
         dataPointMap.put("meter-fifteen-minute-rate", Double.toString(meter.getFifteenMinuteRate()));
         dataPointMap.put("meter-rate-unit", getRateUnit());
-        EventLogRequest elr = new EventLogRequest(isValidTrackingIdentifier() ? trackingIdentifier : jvmUuid,
-                DateTime.now().getMillis(), applicationName, environment, server, name, null, null, dataPointMap);
+        EventLogRequest elr = new EventLogRequest(jvmUuid, DateTime.now().getMillis(), applicationName, environment,
+                server, name, null, null, dataPointMap);
         EventLogMessage elm = new EventLogMessage(elr);
         eventLogService.publishEventLogMessage(elm);
     }
@@ -281,8 +266,8 @@ public class EventLogReporter extends ScheduledReporter {
         dataPointMap.put("histogram-98th-percentile", Double.toString(snapshot.get98thPercentile()));
         dataPointMap.put("histogram-99th-percentile", Double.toString(snapshot.get99thPercentile()));
         dataPointMap.put("histogram-999th-percentile", Double.toString(snapshot.get999thPercentile()));
-        EventLogRequest elr = new EventLogRequest(isValidTrackingIdentifier() ? trackingIdentifier : jvmUuid,
-                DateTime.now().getMillis(), applicationName, environment, server, name, null, null, dataPointMap);
+        EventLogRequest elr = new EventLogRequest(jvmUuid, DateTime.now().getMillis(), applicationName, environment,
+                server, name, null, null, dataPointMap);
         EventLogMessage elm = new EventLogMessage(elr);
         eventLogService.publishEventLogMessage(elm);
     }
@@ -290,8 +275,8 @@ public class EventLogReporter extends ScheduledReporter {
     private void logCounter(String name, Counter counter, String jvmUuid) {
         Map<String, String> dataPointMap = new HashMap<>();
         dataPointMap.put("counter-count", Long.toString(counter.getCount()));
-        EventLogRequest elr = new EventLogRequest(isValidTrackingIdentifier() ? trackingIdentifier : jvmUuid,
-                DateTime.now().getMillis(), applicationName, environment, server, name, null, null, dataPointMap);
+        EventLogRequest elr = new EventLogRequest(jvmUuid, DateTime.now().getMillis(), applicationName, environment,
+                server, name, null, null, dataPointMap);
         EventLogMessage elm = new EventLogMessage(elr);
         eventLogService.publishEventLogMessage(elm);
     }
@@ -299,13 +284,9 @@ public class EventLogReporter extends ScheduledReporter {
     private void logGauge(String name, Gauge gauge, String jvmUuid) {
         Map<String, String> dataPointMap = new HashMap<>();
         dataPointMap.put(name, gauge.getValue().toString());
-        EventLogRequest elr = new EventLogRequest(isValidTrackingIdentifier() ? trackingIdentifier : jvmUuid, DateTime.now().getMillis(), applicationName,
-                environment, server, name, null, null, dataPointMap);
+        EventLogRequest elr = new EventLogRequest(jvmUuid, DateTime.now().getMillis(), applicationName, environment,
+                server, name, null, null, dataPointMap);
         EventLogMessage elm = new EventLogMessage(elr);
         eventLogService.publishEventLogMessage(elm);
-    }
-
-    private boolean isValidTrackingIdentifier() {
-        return null != trackingIdentifier && !(0 < trackingIdentifier.length());
     }
 }

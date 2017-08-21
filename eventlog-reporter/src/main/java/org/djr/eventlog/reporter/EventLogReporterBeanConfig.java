@@ -9,7 +9,6 @@ import org.aeonbits.owner.Config;
         "classpath:EventLogReporterBeanConfig.properties"
 })
 public interface EventLogReporterBeanConfig extends Config {
-    String applicationName();
-    String trackingIdentifier();
-    String environment();
+    Integer period();
+    String timeUnit();
 }
