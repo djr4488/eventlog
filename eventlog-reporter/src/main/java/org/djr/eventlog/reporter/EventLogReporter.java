@@ -235,7 +235,7 @@ public class EventLogReporter extends ScheduledReporter {
         for (StackTraceElement stackTraceElement : result.getError().getStackTrace()) {
             stringBuilder.append(stackTraceElement.toString()).append("\n");
         }
-        return stringBuilder.toString();
+        return stringBuilder.toString().substring(0, 250);
     }
 
     private void logMeter(String name, Meter meter, String jvmUuid) {

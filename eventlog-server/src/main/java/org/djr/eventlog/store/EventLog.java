@@ -7,6 +7,8 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -17,6 +19,10 @@ import java.util.List;
 
 @Entity
 @Table(name = "event_logs")
+@NamedQueries({
+        @NamedQuery(name = "findEventLogsByTrackingIdentifier",
+            query = "select eventlog from EventLog eventLog where eventLog.trackingIdentifier = :trackingIdentifier")
+})
 public class EventLog extends Identifiable implements Serializable {
     private static final long serialVersionUID = 1L;
     @Column(name = "event_occurred_at")

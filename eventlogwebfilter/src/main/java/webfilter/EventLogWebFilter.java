@@ -1,4 +1,4 @@
-package org.djr.eventlog.webfilter;
+package webfilter;
 
 import org.djr.eventlog.EventLogConstants;
 import org.slf4j.Logger;

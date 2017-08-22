@@ -13,6 +13,7 @@
         <module>eventlog-models</module>
         <module>eventlog-client</module>
         <module>eventlog-reporter</module>
+        <module>eventlogwebfilter</module>
     </modules>
 
     <properties>

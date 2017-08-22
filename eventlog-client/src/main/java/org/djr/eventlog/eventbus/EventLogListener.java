@@ -1,6 +1,6 @@
 package org.djr.eventlog.eventbus;
 
-import org.djr.eventlog.EventLogController;
+import org.djr.eventlog.EventLogClientController;
 import com.google.common.eventbus.Subscribe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,11 +12,11 @@ import javax.inject.Inject;
 public class EventLogListener {
     private static final Logger log = LoggerFactory.getLogger(EventLogListener.class);
     @Inject
-    private EventLogController eventLogController;
+    private EventLogClientController eventLogClientController;
 
     @Subscribe
     public void eventLogMessageListener(EventLogMessage eventLogMessage) {
         log.info("eventLogMessageListener() received eventLogMessage:{}", eventLogMessage);
-        eventLogController.doHandleEventLogMessage(eventLogMessage);
+        eventLogClientController.doHandleEventLogMessage(eventLogMessage);
     }
 }

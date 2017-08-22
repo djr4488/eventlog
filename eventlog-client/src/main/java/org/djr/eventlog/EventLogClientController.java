@@ -9,8 +9,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 @ApplicationScoped
-public class EventLogController {
-    private Logger log = LoggerFactory.getLogger(EventLogController.class);
+public class EventLogClientController {
+    private Logger log = LoggerFactory.getLogger(EventLogClientController.class);
     @Inject
     private EventLogClient eventLogClient;
 
