@@ -9,4 +9,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Target({PARAMETER})
 public @interface EventLogParameter {
+    boolean scanForEventLogAttributes() default false;
+    String eventLogParameterName() default "";
 }

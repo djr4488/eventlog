@@ -56,7 +56,7 @@ public class EventLogInterceptorTest {
         doNothing().when(eventLogService).publishEventLogMessage(elmArgumentCaptor.capture());
         intercepted.interceptingMe("no", "yes", "no", 3);
         EventLogRequest elr = elmArgumentCaptor.getValue().getEventLogRequest();
-        assertEquals(3, elr.getDataPoints().size());
+        assertEquals(5, elr.getDataPoints().size());
         assertTrue(elr.getDataPoints().values().contains("interceptingMe"));
         assertTrue(elr.getDataPoints().values().contains("yes"));
         assertTrue(elr.getDataPoints().values().contains("3"));
@@ -72,11 +72,57 @@ public class EventLogInterceptorTest {
         doNothing().when(eventLogService).publishEventLogMessage(elmArgumentCaptor.capture());
         intercepted.interceptingStructTypes(new InterceptedStruct("something", 3, false));
         EventLogRequest elr = elmArgumentCaptor.getValue().getEventLogRequest();
-        assertEquals(2, elr.getDataPoints().size());
+        assertEquals(6, elr.getDataPoints().size());
         assertTrue(elr.getDataPoints().values().contains("interceptingStructTypes"));
-        assertEquals("InterceptedStruct[someValue=something,someIntValue=3,someBooleanValue=false]", elr.getDataPoints().get("org.djr.eventlog.interceptor.InterceptedStruct"));
+        //assertEquals("InterceptedStruct[someValue=something,someIntValue=3,someBooleanValue=false]", elr.getDataPoints().get("org.djr.eventlog.interceptor.InterceptedStruct"));
         assertEquals("ABC123", elr.getTrackingIdentifier());
         assertEquals("eventLog", elr.getApplicationName());
         assertEquals("local_machine", elr.getServer());
+        assertEquals("*", elr.getDataPoints().get("somethingOfValue"));
+        assertEquals("3", elr.getDataPoints().get("someIntValue"));
+        assertEquals("false", elr.getDataPoints().get("someBooleanValue"));
+        assertEquals("is null", elr.getDataPoints().get("Method Intercept Return"));
+    }
+
+    @Test
+    public void testInterceptorWithStructAndReturn() {
+        ArgumentCaptor<EventLogMessage> elmArgumentCaptor = ArgumentCaptor.forClass(EventLogMessage.class);
+        doNothing().when(eventLogService).publishEventLogMessage(elmArgumentCaptor.capture());
+        intercepted.interceptingStructWithReturn(new InterceptedStruct("something", 3, false));
+        EventLogRequest elr = elmArgumentCaptor.getValue().getEventLogRequest();
+        assertEquals(7, elr.getDataPoints().size());
+        assertEquals("interceptingStructWithReturn", elr.getDataPoints().get("methodName"));
+        //assertEquals("InterceptedStruct[someValue=something,someIntValue=3,someBooleanValue=false]", elr.getDataPoints().get("org.djr.eventlog.interceptor.InterceptedStruct"));
+        assertEquals("ABC123", elr.getTrackingIdentifier());
+        assertEquals("eventLog", elr.getApplicationName());
+        assertEquals("local_machine", elr.getServer());
+        assertEquals("*", elr.getDataPoints().get("somethingOfValue"));
+        assertEquals("3", elr.getDataPoints().get("someIntValue"));
+        assertEquals("false", elr.getDataPoints().get("someBooleanValue"));
+        assertEquals("*", elr.getDataPoints().get("someReturnMasked"));
+        assertEquals("somethingReturned", elr.getDataPoints().get("someReturnValue"));
+    }
+
+    @Test
+    public void testInterceptorWhenInterceptedException() {
+        ArgumentCaptor<EventLogMessage> elmArgumentCaptor = ArgumentCaptor.forClass(EventLogMessage.class);
+        doNothing().when(eventLogService).publishEventLogMessage(elmArgumentCaptor.capture());
+        try {
+            intercepted.interceptingStructWithException(new InterceptedStruct("something", 3, false));
+        } catch (Exception ex) {
+            assertTrue(ex.getMessage().equals("test message"));
+        }
+        EventLogRequest elr = elmArgumentCaptor.getValue().getEventLogRequest();
+        assertEquals(7, elr.getDataPoints().size());
+        assertTrue(elr.getDataPoints().values().contains("interceptingStructWithException"));
+        //assertEquals("InterceptedStruct[someValue=something,someIntValue=3,someBooleanValue=false]", elr.getDataPoints().get("org.djr.eventlog.interceptor.InterceptedStruct"));
+        assertEquals("ABC123", elr.getTrackingIdentifier());
+        assertEquals("eventLog", elr.getApplicationName());
+        assertEquals("local_machine", elr.getServer());
+        assertEquals("*", elr.getDataPoints().get("somethingOfValue"));
+        assertEquals("3", elr.getDataPoints().get("someIntValue"));
+        assertEquals("false", elr.getDataPoints().get("someBooleanValue"));
+        assertEquals("java.lang.NullPointerException", elr.getDataPoints().get("Exception Type"));
+        assertEquals("test message", elr.getDataPoints().get("Exception Message"));
     }
 }

@@ -2,10 +2,14 @@ package org.djr.eventlog.interceptor;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.djr.eventlog.annotations.EventLogAttribute;
 
 public class InterceptedStruct {
+    @EventLogAttribute(maskAttribute = true, attributeName = "somethingOfValue")
     private String someValue;
+    @EventLogAttribute
     private int someIntValue;
+    @EventLogAttribute
     private boolean someBooleanValue;
 
     public InterceptedStruct() {
