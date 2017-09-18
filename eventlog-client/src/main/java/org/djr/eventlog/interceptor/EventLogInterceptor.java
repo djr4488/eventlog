@@ -18,6 +18,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -88,16 +89,37 @@ public class EventLogInterceptor {
         try {
             Field[] fields = object.getClass().getDeclaredFields();
             for (Field field : fields) {
-                if (field.isAnnotationPresent(EventLogAttribute.class)) {
-                    EventLogAttribute eventLogAttribute = field.getAnnotation(EventLogAttribute.class);
-                    field.setAccessible(true);
-                    if (eventLogAttribute.maskAttribute()) {
-                        dataPointMap.put(dataPointKeyForParameterName(eventLogAttribute.attributeName(), field.getName()), "*");
+                boolean fieldAccessibleFlagChanged = false;
+                try {
+                    if (!Collections.class.isAssignableFrom(field.getType()) && !field.getType().isArray()) {
+                        if (!field.isAccessible()) {
+                            field.setAccessible(true);
+                            fieldAccessibleFlagChanged = true;
+                        }
+                        if (field.isAnnotationPresent(EventLogAttribute.class)) {
+                            EventLogAttribute eventLogAttribute = field.getAnnotation(EventLogAttribute.class);
+                            if (eventLogAttribute.maskAttribute()) {
+                                dataPointMap.put(dataPointKeyForParameterName(eventLogAttribute.attributeName(), field.getName()), "*");
+                            } else {
+                                dataPointMap.put(dataPointKeyForParameterName(eventLogAttribute.attributeName(), field.getName()), field.get(object).toString());
+                            }
+                        } else {
+                            if (null != field.get(object)) {
+                                dataPointMap.put(field.getName(), field.get(object).toString());
+                            } else {
+                                dataPointMap.put(field.getName(), "null");
+                            }
+                        }
                     } else {
-                        dataPointMap.put(dataPointKeyForParameterName(eventLogAttribute.attributeName(), field.getName()), field.get(object).toString());
+                        dataPointMap.put(field.getName(), "is collection or array, not parsing");
                     }
-                } else {
-                    dataPointMap.put(field.getName(), field.toString());
+                } catch (Exception ex) {
+                    dataPointMap.put("Failed mapping field(s)", ex.getMessage());
+                    log.error("doGenerateDataPointMapForResult() object:{}", object, ex);
+                } finally {
+                    if (fieldAccessibleFlagChanged) {
+                        field.setAccessible(false);
+                    }
                 }
             }
         } catch (Exception ex) {

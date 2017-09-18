@@ -21,7 +21,9 @@ import org.slf4j.LoggerFactory;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -181,13 +183,11 @@ public class EventLogReporter extends ScheduledReporter {
             EventLogMessage elm = new EventLogMessage(elr);
             eventLogService.publishEventLogMessage(elm);
         }
-        for (Map.Entry<String, Gauge> entry : gauges.entrySet()) {
-            logGauge(entry.getKey(), entry.getValue(), jvmUuid);
-        }
+        logJvmGauges(gauges, jvmUuid);
     }
 
     private void logTimer(String name, Timer timer, String jvmUuid) {
-        log.debug("logTimer() name:{}, timer:{}", name, timer);
+        log.debug("logTimer() name:{}, timer:{}, jvmUuid:{}", name, timer, jvmUuid);
         final Snapshot snapshot = timer.getSnapshot();
         Map<String, String> dataPointMap = new HashMap<>();
         dataPointMap.put("timer-count", Long.toString(timer.getCount()));
@@ -214,7 +214,7 @@ public class EventLogReporter extends ScheduledReporter {
     }
 
     private void logHealthChecks(String name, HealthCheck.Result result, String jvmUuid) {
-        log.debug("logHealthCheck() name:{}, result:{}", name, result);
+        log.debug("logHealthCheck() name:{}, result:{}, jvmUuid:{}", name, result, jvmUuid);
         Map<String, String> dataPointMap = new HashMap<>();
         dataPointMap.put("health-result-is-healthy", Boolean.toString(result.isHealthy()));
         String busErrorCode = null;
@@ -239,6 +239,7 @@ public class EventLogReporter extends ScheduledReporter {
     }
 
     private void logMeter(String name, Meter meter, String jvmUuid) {
+        log.debug("logMeter() name:{}, meter:{}, jvmUuid:{}", name, meter, jvmUuid);
         Map<String, String> dataPointMap = new HashMap<>();
         dataPointMap.put("meter-count", Long.toString(meter.getCount()));
         dataPointMap.put("meter-mean-rate", Double.toString(meter.getMeanRate()));
@@ -253,6 +254,7 @@ public class EventLogReporter extends ScheduledReporter {
     }
 
     private void logHistogram(String name, Histogram histogram, String jvmUuid) {
+        log.debug("logHistogram() name:{}, histogram:{}, jvmUuid:{}", name, histogram, jvmUuid);
         final Snapshot snapshot = histogram.getSnapshot();
         Map<String, String> dataPointMap = new HashMap<>();
         dataPointMap.put("histogram-count", Long.toString(histogram.getCount()));
@@ -273,6 +275,7 @@ public class EventLogReporter extends ScheduledReporter {
     }
 
     private void logCounter(String name, Counter counter, String jvmUuid) {
+        log.debug("logCounter{} name:{}, counter:{}, jvmUuid:{}", name, counter, jvmUuid);
         Map<String, String> dataPointMap = new HashMap<>();
         dataPointMap.put("counter-count", Long.toString(counter.getCount()));
         EventLogRequest elr = new EventLogRequest(jvmUuid, DateTime.now().getMillis(), applicationName, environment,
@@ -281,9 +284,27 @@ public class EventLogReporter extends ScheduledReporter {
         eventLogService.publishEventLogMessage(elm);
     }
 
-    private void logGauge(String name, Gauge gauge, String jvmUuid) {
-        Map<String, String> dataPointMap = new HashMap<>();
-        dataPointMap.put(name, gauge.getValue().toString());
+    private void logJvmGauges(SortedMap<String, Gauge> gauges, String jvmUuid) {
+        Set<Map.Entry<String, Gauge>> entrySetGauges = gauges.entrySet();
+        Map<String, String> jvmGuages = new HashMap<>();
+        Map<String, String> nonJvmGuages = new HashMap<>();
+        for (Map.Entry<String, Gauge> guage : entrySetGauges) {
+            if (guage.getKey().contains("jvm")) {
+                jvmGuages.put(guage.getKey(), guage.getValue().getValue().toString());
+            } else {
+                nonJvmGuages.put(guage.getKey(), guage.getValue().getValue().toString());
+            }
+        }
+        if (jvmGuages.size() > 0) {
+            publishGuageLog("JVM Metrics Guages", jvmGuages, jvmUuid);
+        }
+        if (nonJvmGuages.size() > 0) {
+            publishGuageLog("Non JVM Guages", nonJvmGuages, jvmUuid);
+        }
+    }
+
+    private void publishGuageLog(String name, Map<String, String> dataPointMap, String jvmUuid) {
+        log.debug("logGauge() name:{}, dataPointMap:{}, jvmUuid:{}", name, dataPointMap.size(), jvmUuid);
         EventLogRequest elr = new EventLogRequest(jvmUuid, DateTime.now().getMillis(), applicationName, environment,
                 server, name, null, null, dataPointMap);
         EventLogMessage elm = new EventLogMessage(elr);

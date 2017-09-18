@@ -7,6 +7,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.io.Serializable;
@@ -17,7 +18,8 @@ public class DataPoint extends Identifiable implements Serializable {
     private static final long serialVersionUID = 1L;
     @Column(name = "data_point_name")
     private String dataPointName;
-    @Column(name = "data_point_value")
+    @Column(name = "data_point_value", length = 30000)
+    @Lob
     private String dataPointValue;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_logs_id")
