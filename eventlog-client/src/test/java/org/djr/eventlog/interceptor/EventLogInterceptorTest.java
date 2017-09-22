@@ -3,9 +3,11 @@ package org.djr.eventlog.interceptor;
 
 import org.djr.eventlog.Configurator;
 import org.djr.eventlog.EventLogConstants;
+import org.djr.eventlog.annotations.EventLog;
 import org.djr.eventlog.eventbus.EventLogMessage;
 import org.djr.eventlog.eventbus.EventLogService;
 import org.djr.eventlog.rest.EventLogRequest;
+import org.jglue.cdiunit.ActivatedAlternatives;
 import org.jglue.cdiunit.AdditionalClasses;
 import org.jglue.cdiunit.CdiRunner;
 import org.junit.Before;
@@ -31,7 +33,7 @@ import static org.mockito.Mockito.when;
 @RunWith(CdiRunner.class)
 @AdditionalClasses({EventLogInterceptor.class})
 public class EventLogInterceptorTest {
-    private static Logger log = LoggerFactory.getLogger(EventLogInterceptor.class);
+    private static Logger log = LoggerFactory.getLogger(EventLogInterceptorTest.class);
     @Produces
     @Mock
     private EventLogService eventLogService;
@@ -113,7 +115,7 @@ public class EventLogInterceptorTest {
             assertTrue(ex.getMessage().equals("test message"));
         }
         EventLogRequest elr = elmArgumentCaptor.getValue().getEventLogRequest();
-        assertEquals(7, elr.getDataPoints().size());
+        assertEquals(8, elr.getDataPoints().size());
         assertTrue(elr.getDataPoints().values().contains("interceptingStructWithException"));
         //assertEquals("InterceptedStruct[someValue=something,someIntValue=3,someBooleanValue=false]", elr.getDataPoints().get("org.djr.eventlog.interceptor.InterceptedStruct"));
         assertEquals("ABC123", elr.getTrackingIdentifier());

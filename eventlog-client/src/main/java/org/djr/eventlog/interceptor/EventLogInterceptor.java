@@ -1,6 +1,7 @@
 package org.djr.eventlog.interceptor;
 
 import org.djr.eventlog.EventLogConstants;
+import org.djr.eventlog.annotations.EventLog;
 import org.djr.eventlog.annotations.EventLogAttribute;
 import org.djr.eventlog.annotations.EventLogParameter;
 import org.djr.eventlog.eventbus.EventLogMessage;
@@ -10,9 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+import javax.annotation.Priority;
+import javax.enterprise.context.Dependent;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
+import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -22,7 +26,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-@RequestScoped
+@Dependent
+@Interceptor
+@EventLog
+@Priority(200)
 public class EventLogInterceptor {
     private static Logger log = LoggerFactory.getLogger(EventLogInterceptor.class);
     @Inject
@@ -37,15 +44,15 @@ public class EventLogInterceptor {
         Exception toThrow = null;
         try {
             result = invocationContext.proceed();
-            if (null != result) {
-                doGenerateDataPointMapForObject(result, dataPointMap);
-            } else {
-                dataPointMap.put("Method Intercept Return", "is null");
-            }
         } catch (Exception ex) {
             dataPointMap.put("Exception Message", ex.getMessage());
             dataPointMap.put("Exception Type", ex.getClass().getName());
             toThrow = ex;
+        }
+        if (null != result) {
+            doGenerateDataPointMapForObject(result, dataPointMap);
+        } else {
+            dataPointMap.put("Method Intercept Return", "is null");
         }
         EventLogRequest elr = new EventLogRequest(MDC.get(EventLogConstants.eventLogTrackingIdKey), ZonedDateTime.now().toInstant().toEpochMilli(),
                 MDC.get(EventLogConstants.eventLogApplicationNameKey), null, MDC.get(EventLogConstants.eventLogServerKey),
@@ -68,7 +75,7 @@ public class EventLogInterceptor {
                 for (Annotation annotation : parameterAnnotations) {
                     if (EventLogParameter.class.equals(annotation.annotationType())) {
                         EventLogParameter elp = (EventLogParameter) annotation;
-                        dataPointMap.put("Parameter parsing", dataPointKeyForParameterName(elp.eventLogParameterName(), parameters[idx].getClass().getName()));
+                        dataPointMap.put("Parameter parsing", dataPointKeyForParameterName(elp.name(), parameters[idx].getClass().getName()));
                         if (elp.scanForEventLogAttributes()) {
                             dataPointMap = doGenerateDataPointMapForObject(parameters[idx], dataPointMap);
                         } else {
