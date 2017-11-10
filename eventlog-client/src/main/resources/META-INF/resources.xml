@@ -1,0 +1,10 @@
+<resources>
+    <Resource id="EventBusManagedExecutor" type = "ManagedExecutorService">
+        Core = 5
+        Max = 25
+        KeepAlive = 5s
+        Queue = 15
+        ThreadFactory = org.apache.openejb.threads.impl.ManagedThreadFactoryImpl
+        Lazy = true
+    </Resource>
+</resources>
