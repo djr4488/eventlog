@@ -16,6 +16,7 @@ public class EventLogRequest implements Serializable {
     private String eventCode;
     private String businessErrorCode;
     private String systemErrorCode;
+    private String eventType;
     private Map<String, String> dataPoints;
 
     public EventLogRequest() {

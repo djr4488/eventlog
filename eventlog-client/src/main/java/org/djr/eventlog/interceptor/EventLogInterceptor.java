@@ -12,8 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import javax.annotation.Priority;
-import javax.enterprise.context.Dependent;
-import javax.enterprise.context.RequestScoped;
+import javax.annotation.Resource;
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
@@ -21,24 +20,33 @@ import javax.interceptor.InvocationContext;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
-@Dependent
-@Interceptor
 @EventLog
-@Priority(200)
+@Interceptor
+@Priority(1010)
 public class EventLogInterceptor {
     private static Logger log = LoggerFactory.getLogger(EventLogInterceptor.class);
     @Inject
     private EventLogService eventLogService;
+    @Resource(lookup="java:app/AppName")
+    private String resourceAppName;
 
     @AroundInvoke
     public Object aroundInvoke(InvocationContext invocationContext)
     throws Exception {
         log.debug("intercept() intercepting for method:{}", invocationContext.getMethod().getName());
+        if (invocationContext.getMethod().getAnnotation(EventLog.class).generateTrackingIdForEntry()) {
+            MDC.put(EventLogConstants.eventLogTrackingIdKey, UUID.randomUUID().toString());
+            MDC.put(EventLogConstants.eventLogApplicationNameKey, resourceAppName);
+            MDC.put(EventLogConstants.eventLogServerKey, getServerInfo());
+        }
         Map<String, String> dataPointMap = generateEventLogDataPoints(invocationContext.getMethod(), invocationContext.getParameters());
         Object result = null;
         Exception toThrow = null;
@@ -138,5 +146,16 @@ public class EventLogInterceptor {
 
     private String dataPointKeyForParameterName(String eventLogParameterName, String fieldName) {
         return (null != eventLogParameterName && !"".equals(eventLogParameterName.trim())) ? eventLogParameterName : fieldName;
+    }
+
+    private String getServerInfo() {
+        String appName = null;
+        try {
+            InetAddress inetAddress = InetAddress.getLocalHost();
+            appName = inetAddress.getHostName() + " - " + inetAddress.getHostAddress();
+        } catch (UnknownHostException uhEx) {
+            log.debug("getServerInfo() unable to get server info for naming");
+        }
+        return appName;
     }
 }
