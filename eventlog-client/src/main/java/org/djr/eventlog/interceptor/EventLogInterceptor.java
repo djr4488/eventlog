@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,11 +43,8 @@ public class EventLogInterceptor {
     public Object aroundInvoke(InvocationContext invocationContext)
     throws Exception {
         log.debug("intercept() intercepting for method:{}", invocationContext.getMethod().getName());
-        if (invocationContext.getMethod().getAnnotation(EventLog.class).generateTrackingIdForEntry()) {
-            MDC.put(EventLogConstants.eventLogTrackingIdKey, UUID.randomUUID().toString());
-            MDC.put(EventLogConstants.eventLogApplicationNameKey, resourceAppName);
-            MDC.put(EventLogConstants.eventLogServerKey, getServerInfo());
-        }
+        EventLog eventLog = invocationContext.getMethod().getAnnotation(EventLog.class);
+        createTrackingForEventLogIfRequired(eventLog);
         Map<String, String> dataPointMap = generateEventLogDataPoints(invocationContext.getMethod(), invocationContext.getParameters());
         Object result = null;
         Exception toThrow = null;
@@ -57,20 +55,36 @@ public class EventLogInterceptor {
             dataPointMap.put("Exception Type", ex.getClass().getName());
             toThrow = ex;
         }
+        createDataPointForMethodIntercept(dataPointMap, result);
+        createAndPublishEventLog(eventLog, dataPointMap);
+        if (null != toThrow) {
+            throw toThrow;
+        }
+        return result;
+    }
+
+    private void createDataPointForMethodIntercept(Map<String, String> dataPointMap, Object result) {
         if (null != result) {
             doGenerateDataPointMapForObject(result, dataPointMap);
         } else {
             dataPointMap.put("Method Intercept Return", "is null");
         }
+    }
+
+    private void createAndPublishEventLog(EventLog eventLog, Map<String, String> dataPointMap) {
         EventLogRequest elr = new EventLogRequest(MDC.get(EventLogConstants.eventLogTrackingIdKey), ZonedDateTime.now().toInstant().toEpochMilli(),
                 MDC.get(EventLogConstants.eventLogApplicationNameKey), null, MDC.get(EventLogConstants.eventLogServerKey),
-                "Method Intercept", null, null, dataPointMap);
+                "Method Intercept", null, null, eventLog.alertOnException(), dataPointMap);
         EventLogMessage elm = new EventLogMessage(elr);
         eventLogService.publishEventLogMessage(elm);
-        if (null != toThrow) {
-            throw toThrow;
+    }
+
+    private void createTrackingForEventLogIfRequired(EventLog eventLog) {
+        if (eventLog.generateTrackingIdForEntry()) {
+            MDC.put(EventLogConstants.eventLogTrackingIdKey, UUID.randomUUID().toString());
+            MDC.put(EventLogConstants.eventLogApplicationNameKey, resourceAppName);
+            MDC.put(EventLogConstants.eventLogServerKey, getServerInfo());
         }
-        return result;
     }
 
     private Map<String, String> generateEventLogDataPoints(Method method, Object[] parameters) {
@@ -81,15 +95,7 @@ public class EventLogInterceptor {
             int idx = 0;
             for (Annotation[] parameterAnnotations : annotations) {
                 for (Annotation annotation : parameterAnnotations) {
-                    if (EventLogParameter.class.equals(annotation.annotationType())) {
-                        EventLogParameter elp = (EventLogParameter) annotation;
-                        dataPointMap.put("Parameter parsing", dataPointKeyForParameterName(elp.name(), parameters[idx].getClass().getName()));
-                        if (elp.scanForEventLogAttributes()) {
-                            dataPointMap = doGenerateDataPointMapForObject(parameters[idx], dataPointMap);
-                        } else {
-                            dataPointMap.put(method.getParameterTypes()[idx].getName(), parameters[idx].toString());
-                        }
-                    }
+                    dataPointMap = createDataPointMapForObjectAttributes(method, parameters, dataPointMap, idx, annotation);
                 }
                 idx++;
             }
@@ -100,33 +106,35 @@ public class EventLogInterceptor {
         return dataPointMap;
     }
 
+    private Map<String, String> createDataPointMapForObjectAttributes(Method method, Object[] parameters, Map<String, String> dataPointMap, int idx, Annotation annotation) {
+        if (EventLogParameter.class.equals(annotation.annotationType())) {
+			EventLogParameter elp = (EventLogParameter) annotation;
+			dataPointMap.put("Parameter parsing", dataPointKeyForParameterName(elp.name(), parameters[idx].getClass().getName()));
+			if (elp.scanForEventLogAttributes()) {
+				dataPointMap = doGenerateDataPointMapForObject(parameters[idx], dataPointMap);
+			} else {
+				dataPointMap.put(method.getParameterTypes()[idx].getName(), parameters[idx].toString());
+			}
+		}
+        return dataPointMap;
+    }
+
     private Map<String, String> doGenerateDataPointMapForObject(Object object, Map<String, String> dataPointMap) {
         try {
             Field[] fields = object.getClass().getDeclaredFields();
+            boolean fieldAccessibleFlagChanged = false;
             for (Field field : fields) {
-                boolean fieldAccessibleFlagChanged = false;
                 try {
                     if (!Collections.class.isAssignableFrom(field.getType()) && !field.getType().isArray()) {
                         if (!field.isAccessible()) {
                             field.setAccessible(true);
                             fieldAccessibleFlagChanged = true;
                         }
-                        if (field.isAnnotationPresent(EventLogAttribute.class)) {
-                            EventLogAttribute eventLogAttribute = field.getAnnotation(EventLogAttribute.class);
-                            if (eventLogAttribute.maskAttribute()) {
-                                dataPointMap.put(dataPointKeyForParameterName(eventLogAttribute.attributeName(), field.getName()), "*");
-                            } else {
-                                dataPointMap.put(dataPointKeyForParameterName(eventLogAttribute.attributeName(), field.getName()), field.get(object).toString());
-                            }
-                        } else {
-                            if (null != field.get(object)) {
-                                dataPointMap.put(field.getName(), field.get(object).toString());
-                            } else {
-                                dataPointMap.put(field.getName(), "null");
-                            }
-                        }
+                        generateDataPointMapForObjectFields(object, dataPointMap, field);
                     } else {
-                        dataPointMap.put(field.getName(), "is collection or array, not parsing");
+                        log.trace("doGenerateDataPointMapForObject() currently collection capture is not supported");
+                        int collectionSize = object != null ? ((Collection)object).size() : 0;
+                        dataPointMap.put(field.getName(), "is collection or array, not parsing, but size is " + collectionSize);
                     }
                 } catch (Exception ex) {
                     dataPointMap.put("Failed mapping field(s)", ex.getMessage());
@@ -142,6 +150,24 @@ public class EventLogInterceptor {
             log.error("doGenerateDataPointMapForResult() object:{}", object);
         }
         return dataPointMap;
+    }
+
+    private void generateDataPointMapForObjectFields(Object object, Map<String, String> dataPointMap, Field field)
+    throws IllegalAccessException {
+        if (field.isAnnotationPresent(EventLogAttribute.class)) {
+			EventLogAttribute eventLogAttribute = field.getAnnotation(EventLogAttribute.class);
+			if (eventLogAttribute.maskAttribute()) {
+				dataPointMap.put(dataPointKeyForParameterName(eventLogAttribute.attributeName(), field.getName()), "*");
+			} else {
+				dataPointMap.put(dataPointKeyForParameterName(eventLogAttribute.attributeName(), field.getName()), field.get(object).toString());
+			}
+		} else {
+			if (null != field.get(object)) {
+				dataPointMap.put(field.getName(), field.get(object).toString());
+			} else {
+				dataPointMap.put(field.getName(), "null");
+			}
+		}
     }
 
     private String dataPointKeyForParameterName(String eventLogParameterName, String fieldName) {

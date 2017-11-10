@@ -17,13 +17,14 @@ public class EventLogRequest implements Serializable {
     private String businessErrorCode;
     private String systemErrorCode;
     private String eventType;
+    private Boolean alertOnError;
     private Map<String, String> dataPoints;
 
     public EventLogRequest() {
     }
 
     public EventLogRequest(String trackingIdentifier, Long eventOccurredAt, String applicationName, String environment, String server, String eventCode,
-                           String businessErrorCode, String systemErrorCode, Map<String, String> dataPoints) {
+                           String businessErrorCode, String systemErrorCode, Boolean alertOnError, Map<String, String> dataPoints) {
         this.trackingIdentifier = trackingIdentifier;
         this.eventOccurredAt = eventOccurredAt;
         this.applicationName = applicationName;
@@ -32,6 +33,7 @@ public class EventLogRequest implements Serializable {
         this.eventCode = eventCode;
         this.businessErrorCode = businessErrorCode;
         this.systemErrorCode = systemErrorCode;
+        this.alertOnError = alertOnError;
         this.dataPoints = dataPoints;
     }
 
@@ -97,6 +99,14 @@ public class EventLogRequest implements Serializable {
 
     public void setSystemErrorCode(String systemErrorCode) {
         this.systemErrorCode = systemErrorCode;
+    }
+
+    public Boolean isAlertOnError() {
+        return alertOnError;
+    }
+
+    public void setAlertOnError(Boolean alertOnError) {
+        this.alertOnError = alertOnError;
     }
 
     public Map<String, String> getDataPoints() {

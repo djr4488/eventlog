@@ -27,14 +27,12 @@ import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 @ApplicationScoped
 public class EventLogClient {
     private static Logger log = LoggerFactory.getLogger(EventLogClient.class);
     @Inject
     private Configurator configurator;
-    //private EventLogClientConfig config = configurator.getConfiguration(EventLogClientConfig.class);
 
     @RetrofitJsonConfig(captureTrafficLogsPropertyName = "EventLogClient.enableTrafficLogging",
             baseUrlPropertyName = "EventLogClient.baseUrl")
