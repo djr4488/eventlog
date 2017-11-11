@@ -125,7 +125,7 @@ public class EventLogInterceptor {
             boolean fieldAccessibleFlagChanged = false;
             for (Field field : fields) {
                 try {
-                    if (!Collections.class.isAssignableFrom(field.getType()) && !field.getType().isArray()) {
+                    if (!isObjectAJavaCollectionOrArray(object, field)) {
                         if (!field.isAccessible()) {
                             field.setAccessible(true);
                             fieldAccessibleFlagChanged = true;
@@ -133,7 +133,12 @@ public class EventLogInterceptor {
                         generateDataPointMapForObjectFields(object, dataPointMap, field);
                     } else {
                         log.trace("doGenerateDataPointMapForObject() currently collection capture is not supported");
-                        int collectionSize = object != null ? ((Collection)object).size() : 0;
+                        int collectionSize = 0;
+                        try {
+                            collectionSize = object != null ? ((Collection) object).size() : 0;
+                        } catch (Exception ex) {
+                            log.debug("doGenerateDataPointMapForObject() failed with exception", ex);
+                        }
                         dataPointMap.put(field.getName(), "is collection or array, not parsing, but size is " + collectionSize);
                     }
                 } catch (Exception ex) {
@@ -150,6 +155,10 @@ public class EventLogInterceptor {
             log.error("doGenerateDataPointMapForResult() object:{}", object);
         }
         return dataPointMap;
+    }
+
+    private boolean isObjectAJavaCollectionOrArray(Object object, Field field) {
+        return Collections.class.isAssignableFrom(field.getType()) || field.getType().isArray() || (object instanceof Collection);
     }
 
     private void generateDataPointMapForObjectFields(Object object, Map<String, String> dataPointMap, Field field)
