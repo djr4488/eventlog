@@ -38,7 +38,7 @@ public class EventLogStorageService {
         EventLog eventLog = new EventLog(dt.toDate(), eventLogRequest.getApplicationName(),
                 eventLogRequest.getEnvironment(), eventLogRequest.getServer(), eventLogRequest.getEventCode(),
                 eventLogRequest.getBusinessErrorCode(), eventLogRequest.getSystemErrorCode(),
-                eventLogRequest.getTrackingIdentifier(), null);
+                eventLogRequest.getTrackingIdentifier(), eventLogRequest.isAlertOnError(), null);
         eventLog.setCreatedAt(new Date());
         eventLog.setLastUpdatedAt(new Date());
         if (null != eventLogRequest.getDataPoints() && !eventLogRequest.getDataPoints().isEmpty()) {

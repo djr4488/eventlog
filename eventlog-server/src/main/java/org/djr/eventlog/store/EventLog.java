@@ -42,6 +42,8 @@ public class EventLog extends Identifiable implements Serializable {
     private String systemErrorCode;
     @Column(name = "tracking_identifier")
     private String trackingIdentifier;
+    @Column(name = "alert_on_error")
+    private Boolean alertOnError;
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "EventLog", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<DataPoint> dataPoint;
 
@@ -49,7 +51,8 @@ public class EventLog extends Identifiable implements Serializable {
     }
 
     public EventLog(Date eventOccurredAt, String applicationName, String environment, String server, String eventCode,
-                    String businessErrorCode, String systemErrorCode, String trackingIdentifier, List<DataPoint> dataPoint) {
+                    String businessErrorCode, String systemErrorCode, String trackingIdentifier, Boolean alertOnError,
+                    List<DataPoint> dataPoint) {
         this.eventOccurredAt = eventOccurredAt;
         this.applicationName = applicationName;
         this.environment = environment;
@@ -58,6 +61,7 @@ public class EventLog extends Identifiable implements Serializable {
         this.businessErrorCode = businessErrorCode;
         this.systemErrorCode = systemErrorCode;
         this.trackingIdentifier = trackingIdentifier;
+        this.alertOnError = alertOnError;
         this.dataPoint = dataPoint;
     }
 
@@ -123,6 +127,14 @@ public class EventLog extends Identifiable implements Serializable {
 
     public void setTrackingIdentifier(String trackingIdentifier) {
         this.trackingIdentifier = trackingIdentifier;
+    }
+
+    public Boolean getAlertOnError() {
+        return alertOnError;
+    }
+
+    public void setAlertOnError(Boolean alertOnError) {
+        this.alertOnError = alertOnError;
     }
 
     public List<DataPoint> getDataPoint() {

@@ -61,7 +61,7 @@ public class EventLogStoreageServiceTest {
         Map<String, String> dataPointMap = new HashMap<>();
         dataPointMap.put("test-data-point", "data-point-value");
         return new EventLogRequest("Test_123", new Date().getTime(), "app", "local_test",
-                "local_test", "test", null, null, dataPointMap);
+                "local_test", "test", null, null, false, dataPointMap);
     }
 }
 
