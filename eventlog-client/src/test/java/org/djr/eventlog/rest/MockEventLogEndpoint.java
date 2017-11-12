@@ -1,5 +1,6 @@
 package org.djr.eventlog.rest;
 
+import org.djr.eventlog.eventbus.client.EventLogTransport;
 import retrofit2.Call;
 import retrofit2.http.HeaderMap;
 import retrofit2.mock.BehaviorDelegate;

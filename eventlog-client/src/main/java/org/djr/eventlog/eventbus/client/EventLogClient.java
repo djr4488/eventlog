@@ -1,11 +1,11 @@
-package org.djr.eventlog.rest;
+package org.djr.eventlog.eventbus.client;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import org.djr.eventlog.Configurator;
 import org.djr.eventlog.EventLogClientException;
-import org.apache.commons.codec.binary.Base64;
+import org.djr.eventlog.rest.EventLogRequest;
+import org.djr.eventlog.rest.EventLogResponse;
 import org.djr.retrofit2ee.json.DeserializationFeatureConfig;
 import org.djr.retrofit2ee.json.JacksonDeserializationFeature;
 import org.djr.retrofit2ee.json.JacksonMapperFeature;
@@ -31,8 +31,6 @@ import java.util.Map;
 @ApplicationScoped
 public class EventLogClient {
     private static Logger log = LoggerFactory.getLogger(EventLogClient.class);
-    @Inject
-    private Configurator configurator;
 
     @RetrofitJsonConfig(captureTrafficLogsPropertyName = "EventLogClient.enableTrafficLogging",
             baseUrlPropertyName = "EventLogClient.baseUrl")
@@ -47,10 +45,6 @@ public class EventLogClient {
     @Inject
     @RetrofitJson
     private Retrofit retrofitJson;
-
-    @PostConstruct
-    public void postConstruct() {
-    }
 
     public EventLogResponse doPostEventLogRequest(EventLogRequest eventLogRequest) {
         log.debug("doPostEventLogRequest() eventLogRequest:{}", eventLogRequest);

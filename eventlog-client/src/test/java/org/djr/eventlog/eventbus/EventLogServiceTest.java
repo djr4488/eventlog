@@ -1,7 +1,7 @@
 package org.djr.eventlog.eventbus;
 
-import org.djr.eventlog.EventLogClientController;
-import org.djr.eventlog.rest.EventLogClient;
+import org.djr.eventlog.EventController;
+import org.djr.eventlog.eventbus.client.EventLogClient;
 import org.djr.eventlog.rest.EventLogRequest;
 import org.jglue.cdiunit.AdditionalClasses;
 import org.jglue.cdiunit.CdiRunner;
@@ -19,7 +19,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 @RunWith(CdiRunner.class)
-@AdditionalClasses({EventLogClientController.class, EventLogListener.class})
+@AdditionalClasses({EventController.class, EventLogListener.class})
 public class EventLogServiceTest {
     @Produces
     @Mock

@@ -1,13 +1,10 @@
 package org.djr.eventlog.interceptor;
 
-
-import org.djr.eventlog.Configurator;
+import org.djr.eventlog.EventController;
 import org.djr.eventlog.EventLogConstants;
-import org.djr.eventlog.annotations.EventLog;
 import org.djr.eventlog.eventbus.EventLogMessage;
 import org.djr.eventlog.eventbus.EventLogService;
 import org.djr.eventlog.rest.EventLogRequest;
-import org.jglue.cdiunit.ActivatedAlternatives;
 import org.jglue.cdiunit.AdditionalClasses;
 import org.jglue.cdiunit.CdiRunner;
 import org.junit.Before;
@@ -27,8 +24,6 @@ import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @RunWith(CdiRunner.class)
 @AdditionalClasses({EventLogInterceptor.class})
@@ -36,10 +31,7 @@ public class EventLogInterceptorTest {
     private static Logger log = LoggerFactory.getLogger(EventLogInterceptorTest.class);
     @Produces
     @Mock
-    private EventLogService eventLogService;
-    @Produces
-    @Mock
-    private Configurator configurator;
+    private EventController eventLogService;
     @Inject
     private Intercepted intercepted;
 

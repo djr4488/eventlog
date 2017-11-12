@@ -1,8 +1,8 @@
 package org.djr.eventlog.reporter;
 
 import com.codahale.metrics.MetricRegistry;
+import com.djr4488.metrics.config.*;
 import com.djr4488.metrics.reporters.ReporterBean;
-import org.djr.eventlog.Configurator;
 import org.djr.eventlog.eventbus.EventLogService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

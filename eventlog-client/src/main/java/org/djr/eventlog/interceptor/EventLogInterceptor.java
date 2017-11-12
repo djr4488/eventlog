@@ -1,11 +1,11 @@
 package org.djr.eventlog.interceptor;
 
+import org.djr.eventlog.EventController;
 import org.djr.eventlog.EventLogConstants;
 import org.djr.eventlog.annotations.EventLog;
 import org.djr.eventlog.annotations.EventLogAttribute;
 import org.djr.eventlog.annotations.EventLogParameter;
 import org.djr.eventlog.eventbus.EventLogMessage;
-import org.djr.eventlog.eventbus.EventLogService;
 import org.djr.eventlog.rest.EventLogRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +35,7 @@ import java.util.UUID;
 public class EventLogInterceptor {
     private static Logger log = LoggerFactory.getLogger(EventLogInterceptor.class);
     @Inject
-    private EventLogService eventLogService;
+    private EventController eventController;
     @Resource(lookup="java:app/AppName")
     private String resourceAppName;
 
@@ -76,7 +76,7 @@ public class EventLogInterceptor {
                 MDC.get(EventLogConstants.eventLogApplicationNameKey), null, MDC.get(EventLogConstants.eventLogServerKey),
                 "Method Intercept", null, null, eventLog.alertOnException(), dataPointMap);
         EventLogMessage elm = new EventLogMessage(elr);
-        eventLogService.publishEventLogMessage(elm);
+        eventController.publishEventLogMessage(elm);
     }
 
     private void createTrackingForEventLogIfRequired(EventLog eventLog) {
