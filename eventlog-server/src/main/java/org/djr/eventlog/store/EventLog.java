@@ -7,6 +7,7 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.Index;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -18,7 +19,14 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-@Table(name = "event_logs")
+@Table(name = "event_logs",
+        indexes = {
+                @Index(name = "idx_event_occurred_at", columnList = "event_occurred_at"),
+                @Index(name = "idx_application_name", columnList = "application_name"),
+                @Index(name = "idx_event_code", columnList = "event_code"),
+                @Index(name = "idx_business_error_code", columnList = "business_error_code"),
+                @Index(name = "idx_system_error_code", columnList = "system_error_code"),
+                @Index(name = "idx_tracking_identifier", columnList = "tracking_identifier")})
 @NamedQueries({
         @NamedQuery(name = "findEventLogsByTrackingIdentifier",
             query = "select eventlog from EventLog eventLog where eventLog.trackingIdentifier = :trackingIdentifier")
