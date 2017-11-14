@@ -12,7 +12,5 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Target({FIELD})
 public @interface ElasticSearchConfig {
-    String host();
-    int port();
-    String protocol();
+    HostConfig[] hostConfigs();
 }
