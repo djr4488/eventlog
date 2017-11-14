@@ -15,5 +15,5 @@ public @interface ElasticSearchConfig {
     String hostsPropertyName();
     String portsPropertyName();
     String schemePropertyName();
-    String delineator() default ",";
+    String delineatorPropertyName();
 }
