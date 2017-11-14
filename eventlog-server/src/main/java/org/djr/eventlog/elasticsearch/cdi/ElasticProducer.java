@@ -1,16 +1,12 @@
 package org.djr.eventlog.elasticsearch.cdi;
 
 import org.apache.http.HttpHost;
-import org.elasticsearch.action.index.IndexAction;
-import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
@@ -20,11 +16,12 @@ import java.util.Properties;
 /**
  * Created by djr4488 on 11/12/17.
  */
+@ApplicationScoped
 @ElasticSearch
 public class ElasticProducer {
     private static Logger log = LoggerFactory.getLogger(ElasticProducer.class);
     @Inject
-    @ElasticProperties(propertiesFile = "elastic.properties")
+    @ElasticProperties
     private Properties properties;
 
     @Produces
@@ -34,26 +31,42 @@ public class ElasticProducer {
         ElasticSearchConfig config = injectionPoint.getAnnotated().getAnnotation(ElasticSearchConfig.class);
         RestHighLevelClient client = null;
         if (null != config) {
-            HttpHost[] httpHosts = new HttpHost[config.hostConfigs().length];
-            int i = 0;
-            for (HostConfig hostConfig : config.hostConfigs()) {
-                httpHosts[i] = new HttpHost(properties.getProperty(hostConfig.host()),
-                        Integer.parseInt(properties.getProperty(hostConfig.port())),
-                        properties.getProperty(hostConfig.protocol()));
-                i++;
+            String delineator = properties.getProperty(config.delineator());
+            String[] hosts = getStringArray(properties.getProperty(config.hostsPropertyName()), delineator);
+            int[] ports = getIntArray(properties.getProperty(config.portsPropertyName()), delineator);
+            String[] schemes = getStringArray(properties.getProperty(config.schemePropertyName()), delineator);
+            HttpHost[] httpHosts = new HttpHost[hosts.length];
+            for (int i = 0; i < hosts.length; i++) {
+                httpHosts[i] = new HttpHost(hosts[i], ports[i], schemes[i]);
             }
             client = new RestHighLevelClient(
                     RestClient.builder(httpHosts)
                             .build()
             );
         }
-        XContentBuilder xContentBuilder = XContentFactory.jsonBuilder();
-        xContentBuilder.startObject();
-        xContentBuilder.field("name", "value");
-        xContentBuilder.array("datapoint", "values", "values", "values");
-        xContentBuilder.endObject();
-        IndexRequest indexRequest = new IndexRequest("tracking_identifer", "method intercept").source(xContentBuilder);
-        client.index(indexRequest);
         return client;
+    }
+
+    private String[] getStringArray(String toConvert, String delineator) {
+        String[] splits = null;
+        if (null != toConvert) {
+            splits = toConvert.split(delineator);
+        }
+        return splits;
+    }
+
+    private int[] getIntArray(String toConvert, String delineator) {
+        String[] splits = null;
+        int[] asInt = null;
+        if (null != toConvert) {
+            splits = toConvert.split(delineator);
+            asInt = new int[splits.length];
+            int i = 0;
+            for (String split : splits) {
+                asInt[i] = Integer.parseInt(split);
+                i++;
+            }
+        }
+        return asInt;
     }
 }
