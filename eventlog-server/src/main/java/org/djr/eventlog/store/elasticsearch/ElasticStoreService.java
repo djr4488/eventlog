@@ -1,8 +1,9 @@
-package org.djr.eventlog.elasticsearch;
+package org.djr.eventlog.store.elasticsearch;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.djr.eventlog.elasticsearch.cdi.ElasticSearch;
-import org.djr.eventlog.elasticsearch.cdi.ElasticSearchConfig;
+import org.djr.eventlog.store.EventLogStore;
+import org.djr.eventlog.store.elasticsearch.cdi.ElasticSearch;
+import org.djr.eventlog.store.elasticsearch.cdi.ElasticSearchConfig;
 import org.djr.eventlog.rest.EventLogRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
@@ -19,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.net.URLEncoder;
 import java.util.List;
 
@@ -26,7 +28,8 @@ import java.util.List;
  * Created by djr4488 on 11/12/17.
  */
 @ApplicationScoped
-public class ElasticStoreService {
+@Named(value = "ELASTIC")
+public class ElasticStoreService implements EventLogStore {
     private static Logger log = LoggerFactory.getLogger(ElasticStoreService.class);
     @Inject
     @ElasticSearch
@@ -36,7 +39,7 @@ public class ElasticStoreService {
             delineatorPropertyName = "EventLogController.delineator")
     private RestHighLevelClient client;
 
-    public void doStoreEventLogInElasticSearch(EventLogRequest eventLogRequest) {
+    public void storeEventLog(EventLogRequest eventLogRequest) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             byte[] jsonBytes = objectMapper.writeValueAsBytes(eventLogRequest);

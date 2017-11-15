@@ -1,4 +1,4 @@
-package org.djr.eventlog.store;
+package org.djr.eventlog.store.jpa;
 
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;

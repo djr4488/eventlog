@@ -1,4 +1,4 @@
-package org.djr.eventlog.elasticsearch.cdi;
+package org.djr.eventlog.store.elasticsearch.cdi;
 
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;

@@ -1,4 +1,4 @@
-package org.djr.eventlog.elasticsearch.cdi;
+package org.djr.eventlog.store.elasticsearch.cdi;
 
 import javax.inject.Qualifier;
 import java.lang.annotation.Retention;

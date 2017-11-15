@@ -1,4 +1,4 @@
-package org.djr.eventlog.elasticsearch.cdi;
+package org.djr.eventlog.store.elasticsearch.cdi;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;

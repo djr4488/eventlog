@@ -1,9 +1,7 @@
-package org.djr.eventlog.store;
+package org.djr.eventlog.store.jpa;
 
-import org.djr.eventlog.elasticsearch.cdi.ElasticSearch;
-import org.djr.eventlog.elasticsearch.cdi.ElasticSearchConfig;
+import org.djr.eventlog.store.EventLogStore;
 import org.djr.eventlog.rest.EventLogRequest;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,13 +9,9 @@ import org.slf4j.LoggerFactory;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
-import javax.inject.Inject;
+import javax.inject.Named;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -25,8 +19,9 @@ import java.util.Map;
 
 @Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class EventLogStorageService {
-    private static Logger log = LoggerFactory.getLogger(EventLogStorageService.class);
+@Named(value = "JPA")
+public class EventLogJpaService implements EventLogStore {
+    private static Logger log = LoggerFactory.getLogger(EventLogJpaService.class);
     @PersistenceContext(unitName = "eventlog")
     private EntityManager em;
 

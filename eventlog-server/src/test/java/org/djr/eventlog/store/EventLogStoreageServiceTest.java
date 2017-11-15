@@ -1,8 +1,8 @@
 package org.djr.eventlog.store;
 
 import org.djr.eventlog.rest.EventLogRequest;
-import org.jglue.cdiunit.ActivatedAlternatives;
-import org.jglue.cdiunit.CdiRunner;
+import org.djr.eventlog.store.jpa.EventLog;
+import org.djr.eventlog.store.jpa.EventLogJpaService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import java.util.Date;
 import java.util.HashMap;
@@ -36,7 +35,7 @@ public class EventLogStoreageServiceTest {
     @Mock
     private EntityManager em;
     @InjectMocks
-    private EventLogStorageService eventLogStorageService = new EventLogStorageService();
+    private EventLogJpaService eventLogJpaService = new EventLogJpaService();
 
     @Before
     public void setup() {
@@ -47,7 +46,7 @@ public class EventLogStoreageServiceTest {
     public void testStoreEventLog() {
         ArgumentCaptor<EventLog> elCaptor = ArgumentCaptor.forClass(EventLog.class);
         doNothing().when(em).persist(elCaptor.capture());
-        eventLogStorageService.storeEventLog(createEventLogRequest());
+        eventLogJpaService.storeEventLog(createEventLogRequest());
         EventLog el = elCaptor.getValue();
         assertNotNull(el);
         assertEquals("Test_123", el.getTrackingIdentifier());
