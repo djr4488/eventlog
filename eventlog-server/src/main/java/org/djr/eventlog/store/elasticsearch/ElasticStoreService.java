@@ -1,7 +1,7 @@
 package org.djr.eventlog.store.elasticsearch;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.djr.eventlog.store.EventLogStore;
+import org.djr.eventlog.EventLogStore;
 import org.djr.eventlog.store.elasticsearch.cdi.ElasticSearch;
 import org.djr.eventlog.store.elasticsearch.cdi.ElasticSearchConfig;
 import org.djr.eventlog.rest.EventLogRequest;
@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.List;
 
@@ -28,7 +29,7 @@ import java.util.List;
  * Created by djr4488 on 11/12/17.
  */
 @ApplicationScoped
-@Named(value = "ELASTIC")
+@Named("Elastic")
 public class ElasticStoreService implements EventLogStore {
     private static Logger log = LoggerFactory.getLogger(ElasticStoreService.class);
     @Inject
@@ -55,25 +56,19 @@ public class ElasticStoreService implements EventLogStore {
         }
     }
 
-    public List<EventLogRequest> searchDateRangeForApplicationAndServer(DateTime from, DateTime to, String application,
-                                                                             String server) {
-        List<EventLogRequest> elr = null;
+    public SearchResponse search(String query)
+    throws IOException {
         try {
             SearchRequest searchRequest =
                     new SearchRequest();
             SearchSourceBuilder builder = new SearchSourceBuilder();
-            RangeQueryBuilder rqBuilder = QueryBuilders.rangeQuery("eventOccurredAt")
-                    .from(from.getMillis())
-                    .to(to.getMillis());
-            QueryBuilder appBuilder = QueryBuilders.matchQuery("applicationName", application);
-            QueryBuilder envBuilder = QueryBuilders.matchQuery("server", server);
-            builder.query(rqBuilder).query(appBuilder).query(envBuilder);
+            QueryBuilder qBuilder = QueryBuilders.simpleQueryStringQuery(query);
+            builder.query(qBuilder);
             searchRequest.source(builder);
-            SearchResponse searchResponse = client.search(searchRequest);
-            log.debug("searchDateRange() from:{}, to:{}, searchResponse:{}", from.getMillis(), to.getMillis(), searchResponse);
-        } catch (Exception ex) {
-            log.error("search()", ex);
+            return client.search(searchRequest);
+        } catch (IOException ioEx) {
+            log.error("search() exception occurred:", ioEx);
+            throw ioEx;
         }
-        return elr;
     }
 }

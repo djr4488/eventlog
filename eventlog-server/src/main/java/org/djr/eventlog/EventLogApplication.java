@@ -1,5 +1,6 @@
 package org.djr.eventlog;
 
+import io.swagger.jaxrs.listing.ApiListingResource;
 import org.djr.eventlog.rest.EventLogEndpoint;
 import org.djr.eventlog.rest.EventLogExceptionMapper;
 
@@ -11,10 +12,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 @ApplicationScoped
-@ApplicationPath("eventlog")
+@ApplicationPath("api")
 public class EventLogApplication extends Application {
     @Override
     public Set<Class<?>> getClasses() {
-        return new HashSet<>(Arrays.asList(EventLogEndpoint.class, EventLogExceptionMapper.class));
+        return new HashSet<>(Arrays.asList(EventLogEndpoint.class, EventLogExceptionMapper.class, ApiListingResource.class));
     }
 }

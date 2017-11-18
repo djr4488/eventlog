@@ -1,25 +1,29 @@
 package org.djr.eventlog;
 
 import org.djr.eventlog.rest.EventLogRequest;
-import org.djr.eventlog.store.EventLogStore;
-import org.djr.eventlog.store.EventLogStoreProducer;
-import org.djr.eventlog.store.StoreConfig;
+import org.elasticsearch.action.search.SearchResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
+import java.io.IOException;
 
 @ApplicationScoped
 public class EventLogController {
     private static Logger log = LoggerFactory.getLogger(EventLogController.class);
     @Inject
-    @StoreConfig(storeTypePropertyName = "EventLogController.eventStoreType")
-    @EventLogStoreProducer
+    @Named("Elastic")
     private EventLogStore eventLogStore;
 
     public void doHandleEventLogRequest(EventLogRequest eventLogRequest) {
         log.debug("doHandleEventLogRequest() eventLogRequest:{}", eventLogRequest);
         eventLogStore.storeEventLog(eventLogRequest);
+    }
+
+    public SearchResponse doSearch(String query)
+    throws IOException {
+        return eventLogStore.search(query);
     }
 }

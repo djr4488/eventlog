@@ -10,6 +10,6 @@ import retrofit2.http.POST;
 import java.util.Map;
 
 public interface EventLogTransport {
-    @POST("eventlog/store")
+    @POST("api/eventlog/store")
     Call<EventLogResponse> postEventLog(@HeaderMap Map<String, String> headerMap, @Body EventLogRequest eventLogRequest);
 }
