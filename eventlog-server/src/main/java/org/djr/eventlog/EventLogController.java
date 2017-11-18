@@ -24,6 +24,7 @@ public class EventLogController {
 
     public SearchResponse doSearch(String query)
     throws IOException {
+        log.debug("doSearch() query:{}", query);
         return eventLogStore.search(query);
     }
 }
