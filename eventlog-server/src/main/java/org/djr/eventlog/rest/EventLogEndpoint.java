@@ -68,14 +68,15 @@ public class EventLogEndpoint {
     throws IOException {
         log.info("getEventsByTrackingId() entered applicationName:{}", applicationName);
         //temporary just learning elastic search
-        return eventLogController.doSearch("{\"query\":{\"query_string\":{\"query\":\"" + getTodayDateRangeInMillisSearchString() + " AND \"applicationName\":\""+applicationName+"\" AND \"eventCode\":\""+eventCode+"\"\"}}}");
+        return eventLogController.doSearch("{\"query\":{\"query_string\":{\"query\":\"" + getTodayDateRangeInMillisSearchString() + " AND \"applicationName\":\""+applicationName+"\" AND \"eventCode\":\"*"+eventCode+"\"\"}}}");
     }
 
     private String getTodayDateRangeInMillisSearchString() {
         long millisAtStartOfDay = DateTime.now().withTimeAtStartOfDay().getMillis();
         long millisAtStartOfDayTomorrow = DateTime.now().withTimeAtStartOfDay().plusDays(1).getMillis();
         StringBuilder stringBuilder = new StringBuilder("\"eventOccurredAt\":[");
-        stringBuilder.append(millisAtStartOfDay).append(" TO ").append(millisAtStartOfDayTomorrow);
+        stringBuilder.append("\"").append(millisAtStartOfDay).append("\"").append(" TO ")
+                .append("\"").append(millisAtStartOfDayTomorrow).append("\"");
         stringBuilder.append("]");
         return stringBuilder.toString();
     }

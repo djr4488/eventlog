@@ -57,8 +57,9 @@ public class EventLogStoreageServiceTest {
     private EventLogRequest createEventLogRequest() {
         Map<String, String> dataPointMap = new HashMap<>();
         dataPointMap.put("test-data-point", "data-point-value");
-        return new EventLogRequest("Test_123", new Date().getTime(), "app", "local_test",
-                "local_test", "test", null, null, false, dataPointMap);
+        return new EventLogRequest("123", 123L, "app", "env",
+                "svr", "evtCd", "errCd", "evtType", false,
+                123L, 124L, null);
     }
 }
 

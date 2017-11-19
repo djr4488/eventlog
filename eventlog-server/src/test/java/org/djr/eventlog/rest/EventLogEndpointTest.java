@@ -59,7 +59,8 @@ public class EventLogEndpointTest {
     }
 
     private EventLogRequest generateFakeEventLogRequest() {
-        return new EventLogRequest("TEST_123", new Date().getTime(), "event-log-test", "test", "test", "test",
-                null, null, false, null);
+        return new EventLogRequest("123", 123L, "app", "env",
+                "svr", "evtCd", "errCd", "evtType", false,
+                123L, 124L, null);
     }
 }

@@ -7,6 +7,7 @@ import org.djr.eventlog.annotations.EventLogAttribute;
 import org.djr.eventlog.annotations.EventLogParameter;
 import org.djr.eventlog.eventbus.EventLogMessage;
 import org.djr.eventlog.rest.EventLogRequest;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -43,20 +44,30 @@ public class EventLogInterceptor {
     public Object aroundInvoke(InvocationContext invocationContext)
     throws Exception {
         log.debug("intercept() intercepting for method:{}", invocationContext.getMethod().getName());
+        Long interceptStart = DateTime.now().getMillis();
         EventLog eventLog = invocationContext.getMethod().getAnnotation(EventLog.class);
         createTrackingForEventLogIfRequired(eventLog);
         Map<String, String> dataPointMap = generateEventLogDataPoints(invocationContext.getMethod(), invocationContext.getParameters());
         Object result = null;
         Exception toThrow = null;
+        Long methodStart = 0L;
+        Long methodEnd = 0L;
+        Long intExeEnd = 0L;
+        String errCode = null;
         try {
+            methodStart = DateTime.now().getMillis();
             result = invocationContext.proceed();
         } catch (Exception ex) {
             dataPointMap.put("Exception Message", ex.getMessage());
             dataPointMap.put("Exception Type", ex.getClass().getName());
+            errCode = ex.getClass().getName() + ":" + ex.getMessage();
             toThrow = ex;
         }
+        methodEnd = DateTime.now().getMillis();
+
         createDataPointForMethodIntercept(dataPointMap, result);
-        createAndPublishEventLog(eventLog, dataPointMap);
+        createAndPublishEventLog(eventLog, dataPointMap, invocationContext.getMethod().getName(), errCode,
+                methodEnd - methodStart, intExeEnd - interceptStart);
         if (null != toThrow) {
             throw toThrow;
         }
@@ -71,10 +82,11 @@ public class EventLogInterceptor {
         }
     }
 
-    private void createAndPublishEventLog(EventLog eventLog, Map<String, String> dataPointMap) {
-        EventLogRequest elr = new EventLogRequest(MDC.get(EventLogConstants.eventLogTrackingIdKey), ZonedDateTime.now().toInstant().toEpochMilli(),
-                MDC.get(EventLogConstants.eventLogApplicationNameKey), null, MDC.get(EventLogConstants.eventLogServerKey),
-                "Method Intercept", null, null, eventLog.alertOnException(), dataPointMap);
+    private void createAndPublishEventLog(EventLog eventLog, Map<String, String> dataPointMap, String methodName,
+                                          String errCode, Long exeTime, Long intExeTime) {
+        EventLogRequest elr = new EventLogRequest(MDC.get(EventLogConstants.eventLogTrackingIdKey), DateTime.now().getMillis(),
+                resourceAppName, null, getServerInfo(), methodName, errCode, "Method Intercept",
+                eventLog.alertOnException(), exeTime, intExeTime, dataPointMap);
         EventLogMessage elm = new EventLogMessage(elr);
         eventController.publishEventLogMessage(elm);
     }

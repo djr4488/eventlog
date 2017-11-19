@@ -34,9 +34,9 @@ public class EventLogServiceTest {
 
     @Test
     public void testEventLogListener() {
-        EventLogRequest eventLogRequest = new EventLogRequest("123", ZonedDateTime.now().toInstant().toEpochMilli(),
-                "app", "env", "server", "testEC", null,
-                null, false, null);
+        EventLogRequest eventLogRequest = new EventLogRequest("123", 123L, "app",
+                "env", "svr", "ec", "err", "evt", false,
+                123L, 121L, null);
         EventLogMessage eventLogMessage = new EventLogMessage(eventLogRequest);
         eventLogService.publishEventLogMessage(eventLogMessage);
         verify(eventLogClient, times(1)).doPostEventLogRequest(eventLogRequest);

@@ -14,26 +14,30 @@ public class EventLogRequest implements Serializable {
     private String environment;
     private String server;
     private String eventCode;
-    private String businessErrorCode;
-    private String systemErrorCode;
+    private String errorCode;
     private String eventType;
     private Boolean alertOnError;
+    private Long executeTime;
+    private Long interceptExecuteTime;
     private Map<String, String> dataPoints;
 
     public EventLogRequest() {
     }
 
     public EventLogRequest(String trackingIdentifier, Long eventOccurredAt, String applicationName, String environment, String server, String eventCode,
-                           String businessErrorCode, String systemErrorCode, Boolean alertOnError, Map<String, String> dataPoints) {
+                           String errorCode, String eventType, Boolean alertOnError, Long executeTime, Long interceptExecuteTime,
+                           Map<String, String> dataPoints) {
         this.trackingIdentifier = trackingIdentifier;
         this.eventOccurredAt = eventOccurredAt;
         this.applicationName = applicationName;
         this.environment = environment;
         this.server = server;
         this.eventCode = eventCode;
-        this.businessErrorCode = businessErrorCode;
-        this.systemErrorCode = systemErrorCode;
+        this.errorCode = errorCode;
+        this.eventType = eventType;
         this.alertOnError = alertOnError;
+        this.executeTime = executeTime;
+        this.interceptExecuteTime = interceptExecuteTime;
         this.dataPoints = dataPoints;
     }
 
@@ -85,20 +89,20 @@ public class EventLogRequest implements Serializable {
         this.eventCode = eventCode;
     }
 
-    public String getBusinessErrorCode() {
-        return businessErrorCode;
+    public String getErrorCode() {
+        return errorCode;
     }
 
-    public void setBusinessErrorCode(String businessErrorCode) {
-        this.businessErrorCode = businessErrorCode;
+    public void setErrorCode(String errorCode) {
+        this.errorCode = errorCode;
     }
 
-    public String getSystemErrorCode() {
-        return systemErrorCode;
+    public String getEventType() {
+        return eventType;
     }
 
-    public void setSystemErrorCode(String systemErrorCode) {
-        this.systemErrorCode = systemErrorCode;
+    public void setEventType(String eventType) {
+        this.eventType = eventType;
     }
 
     public Boolean isAlertOnError() {
