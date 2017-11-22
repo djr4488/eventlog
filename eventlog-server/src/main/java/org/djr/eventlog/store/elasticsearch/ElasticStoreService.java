@@ -6,6 +6,7 @@ import org.djr.eventlog.store.elasticsearch.cdi.ElasticSearch;
 import org.djr.eventlog.store.elasticsearch.cdi.ElasticSearchConfig;
 import org.djr.eventlog.rest.EventLogRequest;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -43,14 +44,13 @@ public class ElasticStoreService implements EventLogStore {
     public void storeEventLog(EventLogRequest eventLogRequest) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            byte[] jsonBytes = objectMapper.writeValueAsBytes(eventLogRequest);
-            String jsonString = new String(jsonBytes);
+            String jsonString = objectMapper.writeValueAsString(eventLogRequest);
             log.debug("doStoreEventLogInElasticSearch() jsonString:{}", jsonString);
             IndexRequest indexRequest =
-                    new IndexRequest(URLEncoder.encode(eventLogRequest.getApplicationName(), "UTF-8"),
-                            URLEncoder.encode(eventLogRequest.getEventCode(), "UTF-8"))
-                            .source(jsonBytes, XContentType.JSON);
-            client.index(indexRequest);
+                    new IndexRequest(URLEncoder.encode("eventlogs", "UTF-8"),"event")
+                            .source(jsonString, XContentType.JSON);
+            IndexResponse ir = client.index(indexRequest);
+            log.debug("storeEventLog() indexResponse:{}", ir);
         } catch (Exception ex) {
             log.error("doStoreEventLogInElasticSearch() failed to store event in elastic search", ex);
         }

@@ -4,8 +4,12 @@ package org.djr.eventlog.rest;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.lucene.queryparser.flexible.core.builders.QueryBuilder;
 import org.djr.eventlog.EventLogController;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,21 +67,40 @@ public class EventLogEndpoint {
     @ApiOperation(value ="search/{applicationName}",
             notes = "Allows to retrieve events based on event code, app name, and today time range")
     public SearchResponse getEventsByTodayAndApplicationNameAndEventCode(@Context HttpServletRequest request,
-                                                @PathParam("applicationName") String applicationName,
-                                                @PathParam("eventCode") String eventCode)
+                                                                         @PathParam("applicationName") String applicationName,
+                                                                         @PathParam("eventCode") String eventCode)
     throws IOException {
-        log.info("getEventsByTrackingId() entered applicationName:{}", applicationName);
+        log.info("getEventsByTrackingId() entered applicationName:{}, eventCode:{}", applicationName, eventCode);
         //temporary just learning elastic search
-        return eventLogController.doSearch("{\"query\":{\"query_string\":{\"query\":\"" + getTodayDateRangeInMillisSearchString() + " AND \"applicationName\":\""+applicationName+"\" AND \"eventCode\":\"*"+eventCode+"\"\"}}}");
+        long millisAtStartOfDay = DateTime.now().withTimeAtStartOfDay().getMillis();
+        long millisAtStartOfDayTomorrow = DateTime.now().withTimeAtStartOfDay().plusDays(1).getMillis();
+        String qb = QueryBuilders.boolQuery()
+                .must(QueryBuilders.rangeQuery("eventOccurredAt").from(millisAtStartOfDay).to(millisAtStartOfDayTomorrow))
+                .must(QueryBuilders.termQuery("applicationName", applicationName))
+                .must(QueryBuilders.termQuery("eventCode", eventCode))
+                .toString();
+        SearchResponse sr = eventLogController.doSearch(qb);
+        log.info("getEventsByTodayAndApplicationNameAndEventCode completed with searchResponse:{}", sr);
+        return sr;
+    }
+
+    public String queryBuilderTodayAndAppNameAndEventCode(String applicationName, String eventCode) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\"bool\":{")
+                .append("\"must\":[")
+                .append("{\"term\": {\"applicationName\":\"").append(applicationName).append("\"}},")
+                .append("{\"term\": {\"eventCode\":\"").append(eventCode).append("\"}},")
+                .append(getTodayDateRangeInMillisSearchString())
+                .append("]}}");
+        return sb.toString();
     }
 
     private String getTodayDateRangeInMillisSearchString() {
         long millisAtStartOfDay = DateTime.now().withTimeAtStartOfDay().getMillis();
         long millisAtStartOfDayTomorrow = DateTime.now().withTimeAtStartOfDay().plusDays(1).getMillis();
-        StringBuilder stringBuilder = new StringBuilder("\"eventOccurredAt\":[");
-        stringBuilder.append("\"").append(millisAtStartOfDay).append("\"").append(" TO ")
-                .append("\"").append(millisAtStartOfDayTomorrow).append("\"");
-        stringBuilder.append("]");
-        return stringBuilder.toString();
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\"term\": {\"eventOccurredAt\": [").append(millisAtStartOfDay).append(" TO ").append(millisAtStartOfDayTomorrow).append("]}}");
+        return sb.toString();
     }
 }
+
