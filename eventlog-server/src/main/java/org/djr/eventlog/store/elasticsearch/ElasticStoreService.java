@@ -9,6 +9,7 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -56,22 +57,6 @@ public class ElasticStoreService implements EventLogStore {
         }
     }
 
-    public SearchResponse search(String query)
-    throws IOException {
-        try {
-            SearchRequest searchRequest =
-                    new SearchRequest();
-            SearchSourceBuilder builder = new SearchSourceBuilder();
-            QueryBuilder qBuilder = QueryBuilders.queryStringQuery(query);
-            builder.query(qBuilder);
-            searchRequest.source(builder);
-            return client.search(searchRequest);
-        } catch (IOException ioEx) {
-            log.error("search() exception occurred:", ioEx);
-            throw ioEx;
-        }
-    }
-
     public SearchResponse search(QueryBuilder queryBuilder)
     throws IOException {
         try {
@@ -80,7 +65,7 @@ public class ElasticStoreService implements EventLogStore {
             SearchSourceBuilder builder = new SearchSourceBuilder();
             builder.query(queryBuilder);
             searchRequest.source(builder);
-            return client.search(searchRequest);
+            return client.search(searchRequest.searchType(SearchType.DFS_QUERY_THEN_FETCH));
         } catch (IOException ioEx) {
             log.error("search() exception occurred:", ioEx);
             throw ioEx;

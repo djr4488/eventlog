@@ -54,8 +54,7 @@ public class EventLogEndpoint {
                                                 @PathParam("trackingId") String trackingId)
     throws IOException {
         log.info("getEventsByTrackingId() entered trackingId:{}", trackingId);
-        //temporary just learning elastic search
-        return eventLogController.doSearch("{\"query\":{\"match\":{\"tracking_identifier\":\""+trackingId+"\"}}}");
+        return eventLogController.doSearchByTrackingId(trackingId);
     }
 
     @Consumes({MediaType.APPLICATION_JSON})
@@ -69,35 +68,9 @@ public class EventLogEndpoint {
                                                                          @PathParam("eventCode") String eventCode)
     throws IOException {
         log.info("getEventsByTrackingId() entered applicationName:{}, eventCode:{}", applicationName, eventCode);
-        //temporary just learning elastic search
-        long millisAtStartOfDay = DateTime.now().withTimeAtStartOfDay().getMillis();
-        long millisAtStartOfDayTomorrow = DateTime.now().withTimeAtStartOfDay().plusDays(1).getMillis();
-        QueryBuilder qb = QueryBuilders.boolQuery()
-                .must(QueryBuilders.rangeQuery("eventOccurredAt").from(millisAtStartOfDay).to(millisAtStartOfDayTomorrow))
-                .must(QueryBuilders.termQuery("applicationName", applicationName))
-                .must(QueryBuilders.termQuery("eventCode", eventCode));
-        SearchResponse sr = eventLogController.doSearch(qb);
+        SearchResponse sr = eventLogController.doSearchByTodayApplicationNameAndEventCode(applicationName, eventCode);
         log.info("getEventsByTodayAndApplicationNameAndEventCode completed with searchResponse:{}", sr);
         return sr;
-    }
-
-    public String queryBuilderTodayAndAppNameAndEventCode(String applicationName, String eventCode) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{\"bool\":{")
-                .append("\"must\":[")
-                .append("{\"term\": {\"applicationName\":\"").append(applicationName).append("\"}},")
-                .append("{\"term\": {\"eventCode\":\"").append(eventCode).append("\"}},")
-                .append(getTodayDateRangeInMillisSearchString())
-                .append("]}}");
-        return sb.toString();
-    }
-
-    private String getTodayDateRangeInMillisSearchString() {
-        long millisAtStartOfDay = DateTime.now().withTimeAtStartOfDay().getMillis();
-        long millisAtStartOfDayTomorrow = DateTime.now().withTimeAtStartOfDay().plusDays(1).getMillis();
-        StringBuilder sb = new StringBuilder();
-        sb.append("{\"term\": {\"eventOccurredAt\": [").append(millisAtStartOfDay).append(" TO ").append(millisAtStartOfDayTomorrow).append("]}}");
-        return sb.toString();
     }
 }
 

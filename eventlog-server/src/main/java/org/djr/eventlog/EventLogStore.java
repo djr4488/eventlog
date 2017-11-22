@@ -12,6 +12,5 @@ import java.io.IOException;
  */
 public interface EventLogStore {
     void storeEventLog(EventLogRequest eventLogRequest);
-    SearchResponse search(String searchQuery) throws IOException;
     SearchResponse search(QueryBuilder queryBuilder) throws IOException;
 }
