@@ -62,8 +62,23 @@ public class ElasticStoreService implements EventLogStore {
             SearchRequest searchRequest =
                     new SearchRequest();
             SearchSourceBuilder builder = new SearchSourceBuilder();
-            QueryBuilder qBuilder = QueryBuilders.simpleQueryStringQuery(query);
+            QueryBuilder qBuilder = QueryBuilders.queryStringQuery(query);
             builder.query(qBuilder);
+            searchRequest.source(builder);
+            return client.search(searchRequest);
+        } catch (IOException ioEx) {
+            log.error("search() exception occurred:", ioEx);
+            throw ioEx;
+        }
+    }
+
+    public SearchResponse search(QueryBuilder queryBuilder)
+    throws IOException {
+        try {
+            SearchRequest searchRequest =
+                    new SearchRequest();
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+            builder.query(queryBuilder);
             searchRequest.source(builder);
             return client.search(searchRequest);
         } catch (IOException ioEx) {

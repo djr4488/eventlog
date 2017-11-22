@@ -4,11 +4,9 @@ package org.djr.eventlog.rest;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.lucene.queryparser.flexible.core.builders.QueryBuilder;
 import org.djr.eventlog.EventLogController;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -74,11 +72,10 @@ public class EventLogEndpoint {
         //temporary just learning elastic search
         long millisAtStartOfDay = DateTime.now().withTimeAtStartOfDay().getMillis();
         long millisAtStartOfDayTomorrow = DateTime.now().withTimeAtStartOfDay().plusDays(1).getMillis();
-        String qb = QueryBuilders.boolQuery()
+        QueryBuilder qb = QueryBuilders.boolQuery()
                 .must(QueryBuilders.rangeQuery("eventOccurredAt").from(millisAtStartOfDay).to(millisAtStartOfDayTomorrow))
                 .must(QueryBuilders.termQuery("applicationName", applicationName))
-                .must(QueryBuilders.termQuery("eventCode", eventCode))
-                .toString();
+                .must(QueryBuilders.termQuery("eventCode", eventCode));
         SearchResponse sr = eventLogController.doSearch(qb);
         log.info("getEventsByTodayAndApplicationNameAndEventCode completed with searchResponse:{}", sr);
         return sr;
