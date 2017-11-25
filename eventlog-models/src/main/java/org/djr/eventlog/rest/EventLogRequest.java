@@ -113,6 +113,22 @@ public class EventLogRequest implements Serializable {
         this.alertOnError = alertOnError;
     }
 
+    public Long getExecuteTime() {
+        return executeTime;
+    }
+
+    public void setExecuteTime(Long executeTime) {
+        this.executeTime = executeTime;
+    }
+
+    public Long getInterceptExecuteTime() {
+        return interceptExecuteTime;
+    }
+
+    public void setInterceptExecuteTime(Long interceptExecuteTime) {
+        this.interceptExecuteTime = interceptExecuteTime;
+    }
+
     public Map<String, String> getDataPoints() {
         return dataPoints;
     }

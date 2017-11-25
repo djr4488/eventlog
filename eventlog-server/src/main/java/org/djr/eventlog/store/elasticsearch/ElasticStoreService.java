@@ -15,6 +15,7 @@ import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -64,6 +65,22 @@ public class ElasticStoreService implements EventLogStore {
                     new SearchRequest();
             SearchSourceBuilder builder = new SearchSourceBuilder();
             builder.query(queryBuilder);
+            searchRequest.source(builder);
+            return client.search(searchRequest.searchType(SearchType.DFS_QUERY_THEN_FETCH));
+        } catch (IOException ioEx) {
+            log.error("search() exception occurred:", ioEx);
+            throw ioEx;
+        }
+    }
+
+    public SearchResponse search(QueryBuilder queryBuilder, AggregationBuilder aggregationBuilder)
+    throws IOException {
+        try {
+            SearchRequest searchRequest =
+                    new SearchRequest();
+            SearchSourceBuilder builder = new SearchSourceBuilder();
+            builder.query(queryBuilder);
+            builder.aggregation(aggregationBuilder);
             searchRequest.source(builder);
             return client.search(searchRequest.searchType(SearchType.DFS_QUERY_THEN_FETCH));
         } catch (IOException ioEx) {

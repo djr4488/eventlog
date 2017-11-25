@@ -64,14 +64,20 @@ public class EventLogInterceptor {
             toThrow = ex;
         }
         methodEnd = DateTime.now().getMillis();
-
         createDataPointForMethodIntercept(dataPointMap, result);
-        createAndPublishEventLog(eventLog, dataPointMap, invocationContext.getMethod().getName(), errCode,
-                methodEnd - methodStart, intExeEnd - interceptStart);
+        String eventLogName = eventLog.name();
+        String methodName = invocationContext.getMethod().getName();
+        intExeEnd = DateTime.now().getMillis();
+        createAndPublishEventLog(eventLog, dataPointMap, getName(eventLogName, methodName),
+                errCode,methodEnd - methodStart, intExeEnd - interceptStart);
         if (null != toThrow) {
             throw toThrow;
         }
         return result;
+    }
+
+    private String getName(String eventLogName, String invokedMethodName) {
+        return "".equals(eventLogName) ? invokedMethodName : eventLogName;
     }
 
     private void createDataPointForMethodIntercept(Map<String, String> dataPointMap, Object result) {
@@ -86,7 +92,7 @@ public class EventLogInterceptor {
                                           String errCode, Long exeTime, Long intExeTime) {
         EventLogRequest elr = new EventLogRequest(MDC.get(EventLogConstants.eventLogTrackingIdKey), DateTime.now().getMillis(),
                 resourceAppName, null, getServerInfo(), methodName, errCode, "Method Intercept",
-                eventLog.alertOnException(), exeTime, intExeTime, dataPointMap);
+                eventLog.alertOnException(), exeTime, intExeTime - exeTime, dataPointMap);
         EventLogMessage elm = new EventLogMessage(elr);
         eventController.publishEventLogMessage(elm);
     }

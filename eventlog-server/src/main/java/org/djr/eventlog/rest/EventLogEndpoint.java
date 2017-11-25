@@ -61,7 +61,7 @@ public class EventLogEndpoint {
     @Produces({MediaType.APPLICATION_JSON})
     @GET
     @Path("search/{applicationName}/{eventCode}")
-    @ApiOperation(value ="search/{applicationName}",
+    @ApiOperation(value ="search/{applicationName}/{eventCode}",
             notes = "Allows to retrieve events based on event code, app name, and today time range")
     public SearchResponse getEventsByTodayAndApplicationNameAndEventCode(@Context HttpServletRequest request,
                                                                          @PathParam("applicationName") String applicationName,
@@ -70,6 +70,24 @@ public class EventLogEndpoint {
         log.info("getEventsByTrackingId() entered applicationName:{}, eventCode:{}", applicationName, eventCode);
         SearchResponse sr = eventLogController.doSearchByTodayApplicationNameAndEventCode(applicationName, eventCode);
         log.info("getEventsByTodayAndApplicationNameAndEventCode completed with searchResponse:{}", sr);
+        return sr;
+    }
+
+    @Consumes({MediaType.APPLICATION_JSON})
+    @Produces({MediaType.APPLICATION_JSON})
+    @GET
+    @Path("aggs/{applicationName}/{eventCode}/{aggregationType}")
+    @ApiOperation(value = "aggs/{applicationName}/{eventCode}/{aggregationType}",
+            notes = "Allows to retrieve event aggreations based on event code, app name, and today time range")
+    public SearchResponse getEventAggregationByAppNameEventCodeAndAggType(@Context HttpServletRequest request,
+                                                                          @PathParam("applicationName") String applicationName,
+                                                                          @PathParam("eventCode") String eventCode,
+                                                                          @PathParam("aggregationType") String aggregationType)
+    throws IOException {
+        log.info("getEventAggregationByAppNameEventCodeAndAggType() entered applicationName:{}, eventCode:{}, aggregationType:{}",
+                applicationName, eventCode, aggregationType);
+        SearchResponse sr = eventLogController.doAggregationSearch(applicationName, eventCode, aggregationType);
+        log.info("getEventAggregationByAppNameEventCodeAndAggType() searchResponse:{}", sr);
         return sr;
     }
 }
