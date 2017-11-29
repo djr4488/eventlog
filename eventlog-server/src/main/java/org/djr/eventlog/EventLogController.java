@@ -41,27 +41,13 @@ public class EventLogController {
         return eventLogStore.search(qb);
     }
 
-    public SearchResponse doAggregationSearch(String applicationName, String eventCode, String aggregationType)
+    public SearchResponse doAggregationAvgAndCountSearch(String applicationName, String eventCode)
     throws IOException {
-        log.debug("doAggregationSearch() applicationName:{}, eventCode:{}, aggregationType:{}", applicationName,
-                eventCode, aggregationType);
+        log.debug("doAggregationSearch() applicationName:{}, eventCode:{}", applicationName,
+                eventCode);
         QueryBuilder qb = eventCodeAndApplicationNameQueryBuilder(applicationName, eventCode);
-        AggregationBuilder ab;
-        switch (aggregationType) {
-            case "COUNT": {
-                ab = AggregationBuilders.count("apps_and_event_codes_count")
-                        .field("eventCode");
-                break;
-            }
-            case "AVG": {
-                ab = AggregationBuilders.avg("apps_and_event_codes_avg")
+        AggregationBuilder ab = AggregationBuilders.avg("apps_and_event_codes_avg")
                         .field("executeTime");
-                break;
-            }
-            default: {
-                throw new RuntimeException("Failed to recognize aggregationType");
-            }
-        }
         return eventLogStore.search(qb, ab);
     }
 

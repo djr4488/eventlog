@@ -41,7 +41,6 @@ public class ElasticProducer {
             }
             client = new RestHighLevelClient(
                     RestClient.builder(httpHosts)
-                            .build()
             );
         }
         return client;

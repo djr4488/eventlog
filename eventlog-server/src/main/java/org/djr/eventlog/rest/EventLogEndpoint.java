@@ -76,17 +76,16 @@ public class EventLogEndpoint {
     @Consumes({MediaType.APPLICATION_JSON})
     @Produces({MediaType.APPLICATION_JSON})
     @GET
-    @Path("aggs/{applicationName}/{eventCode}/{aggregationType}")
-    @ApiOperation(value = "aggs/{applicationName}/{eventCode}/{aggregationType}",
+    @Path("aggs/{applicationName}/{eventCode}")
+    @ApiOperation(value = "aggs/{applicationName}/{eventCode}",
             notes = "Allows to retrieve event aggreations based on event code, app name, and today time range")
     public SearchResponse getEventAggregationByAppNameEventCodeAndAggType(@Context HttpServletRequest request,
                                                                           @PathParam("applicationName") String applicationName,
-                                                                          @PathParam("eventCode") String eventCode,
-                                                                          @PathParam("aggregationType") String aggregationType)
+                                                                          @PathParam("eventCode") String eventCode)
     throws IOException {
-        log.info("getEventAggregationByAppNameEventCodeAndAggType() entered applicationName:{}, eventCode:{}, aggregationType:{}",
-                applicationName, eventCode, aggregationType);
-        SearchResponse sr = eventLogController.doAggregationSearch(applicationName, eventCode, aggregationType);
+        log.info("getEventAggregationByAppNameEventCodeAndAggType() entered applicationName:{}, eventCode:{}",
+                applicationName, eventCode);
+        SearchResponse sr = eventLogController.doAggregationAvgAndCountSearch(applicationName, eventCode);
         log.info("getEventAggregationByAppNameEventCodeAndAggType() searchResponse:{}", sr);
         return sr;
     }
