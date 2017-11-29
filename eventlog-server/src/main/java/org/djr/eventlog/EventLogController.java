@@ -14,6 +14,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @ApplicationScoped
 public class EventLogController {
@@ -34,29 +36,56 @@ public class EventLogController {
         return eventLogStore.search(qb);
     }
 
-    public SearchResponse doSearchByTodayApplicationNameAndEventCode(String applicationName, String eventCode)
-    throws IOException {
-        log.debug("doSearch() applicationName:{}, eventCode:{}", applicationName, eventCode);
-        QueryBuilder qb = eventCodeAndApplicationNameQueryBuilder(applicationName, eventCode);
-        return eventLogStore.search(qb);
-    }
-
-    public SearchResponse doAggregationAvgAndCountSearch(String applicationName, String eventCode)
+    public Map<String, SearchResponse> doAggregationAvgAndCountSearch(String applicationName, String eventCode)
     throws IOException {
         log.debug("doAggregationSearch() applicationName:{}, eventCode:{}", applicationName,
                 eventCode);
-        QueryBuilder qb = eventCodeAndApplicationNameQueryBuilder(applicationName, eventCode);
         AggregationBuilder ab = AggregationBuilders.avg("apps_and_event_codes_avg")
                         .field("executeTime");
-        return eventLogStore.search(qb, ab);
+        Map<String, SearchResponse> results = new HashMap<>();
+        results.put("Today", eventLogStore.search(getTodayResultsForApplicationNameAndEventCode(applicationName, eventCode), ab));
+        results.put("Yesterday", eventLogStore.search(getYesterdayResultsForApplicationNameAndEventCode(applicationName, eventCode), ab));
+        results.put("LastWeekSameDay", eventLogStore.search(getLastWeekSameDayResultsForApplicationNameAndEventCode(applicationName, eventCode), ab));
+        results.put("Last7Days", eventLogStore.search(getLast7DaysResultsForApplicationNameAndEventCode(applicationName, eventCode), ab));
+        results.put("Last30Days", eventLogStore.search(getLast30DaysResultsForApplicationNameAndEventCode(applicationName, eventCode), ab));
+        return results;
     }
 
-    private QueryBuilder eventCodeAndApplicationNameQueryBuilder(String applicationName, String eventCode) {
-        long millisAtStartOfDay = DateTime.now().withTimeAtStartOfDay().getMillis();
-        long millisAtStartOfDayTomorrow = DateTime.now().withTimeAtStartOfDay().plusDays(1).getMillis();
+    private QueryBuilder eventCodeAndApplicationNameQueryBuilder(String applicationName, String eventCode, long startMillis,
+                                                                 long endMillis) {
         return QueryBuilders.boolQuery()
-                .must(QueryBuilders.rangeQuery("eventOccurredAt").from(millisAtStartOfDay).to(millisAtStartOfDayTomorrow))
+                .must(QueryBuilders.rangeQuery("eventOccurredAt").from(startMillis).to(endMillis))
                 .must(QueryBuilders.matchPhraseQuery("applicationName", applicationName))
                 .must(QueryBuilders.matchPhraseQuery("eventCode", eventCode));
+    }
+
+    private QueryBuilder getTodayResultsForApplicationNameAndEventCode(String applicationName, String eventCode) {
+        long startMillis = DateTime.now().withTimeAtStartOfDay().getMillis();
+        long endMillis = DateTime.now().withTimeAtStartOfDay().plusDays(1).getMillis();
+        return eventCodeAndApplicationNameQueryBuilder(applicationName, eventCode, startMillis, endMillis);
+    }
+
+    private QueryBuilder getYesterdayResultsForApplicationNameAndEventCode(String applicationName, String eventCode) {
+        long startMillis = DateTime.now().withTimeAtStartOfDay().minusDays(1).getMillis();
+        long endMillis = DateTime.now().withTimeAtStartOfDay().getMillis();
+        return eventCodeAndApplicationNameQueryBuilder(applicationName, eventCode, startMillis, endMillis);
+    }
+
+    private QueryBuilder getLastWeekSameDayResultsForApplicationNameAndEventCode(String applicationName, String eventCode) {
+        long startMillis = DateTime.now().withTimeAtStartOfDay().minusWeeks(1).getMillis();
+        long endMillis = DateTime.now().withTimeAtStartOfDay().minusDays(6).getMillis();
+        return eventCodeAndApplicationNameQueryBuilder(applicationName, eventCode, startMillis, endMillis);
+    }
+
+    private QueryBuilder getLast7DaysResultsForApplicationNameAndEventCode(String applicationName, String eventCode) {
+        long startMillis = DateTime.now().withTimeAtStartOfDay().minusDays(7).getMillis();
+        long endMillis = DateTime.now().withTimeAtStartOfDay().getMillis();
+        return eventCodeAndApplicationNameQueryBuilder(applicationName, eventCode, startMillis, endMillis);
+    }
+
+    private QueryBuilder getLast30DaysResultsForApplicationNameAndEventCode(String applicationName, String eventCode) {
+        long startMillis = DateTime.now().withTimeAtStartOfDay().minusDays(30).getMillis();
+        long endMillis = DateTime.now().withTimeAtStartOfDay().getMillis();
+        return eventCodeAndApplicationNameQueryBuilder(applicationName, eventCode, startMillis, endMillis);
     }
 }

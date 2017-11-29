@@ -24,6 +24,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
+import java.util.Map;
 
 @ApplicationScoped
 @Path("eventlog")
@@ -60,32 +61,16 @@ public class EventLogEndpoint {
     @Consumes({MediaType.APPLICATION_JSON})
     @Produces({MediaType.APPLICATION_JSON})
     @GET
-    @Path("search/{applicationName}/{eventCode}")
-    @ApiOperation(value ="search/{applicationName}/{eventCode}",
-            notes = "Allows to retrieve events based on event code, app name, and today time range")
-    public SearchResponse getEventsByTodayAndApplicationNameAndEventCode(@Context HttpServletRequest request,
-                                                                         @PathParam("applicationName") String applicationName,
-                                                                         @PathParam("eventCode") String eventCode)
-    throws IOException {
-        log.info("getEventsByTrackingId() entered applicationName:{}, eventCode:{}", applicationName, eventCode);
-        SearchResponse sr = eventLogController.doSearchByTodayApplicationNameAndEventCode(applicationName, eventCode);
-        log.info("getEventsByTodayAndApplicationNameAndEventCode completed with searchResponse:{}", sr);
-        return sr;
-    }
-
-    @Consumes({MediaType.APPLICATION_JSON})
-    @Produces({MediaType.APPLICATION_JSON})
-    @GET
     @Path("aggs/{applicationName}/{eventCode}")
     @ApiOperation(value = "aggs/{applicationName}/{eventCode}",
-            notes = "Allows to retrieve event aggreations based on event code, app name, and today time range")
-    public SearchResponse getEventAggregationByAppNameEventCodeAndAggType(@Context HttpServletRequest request,
+            notes = "Allows to retrieve event aggregations; avg timings, counts for today, yesterday, last 7 days, last week same day, last 30 days")
+    public Map<String, SearchResponse> getEventAggregationByAppNameEventCodeAndAggType(@Context HttpServletRequest request,
                                                                           @PathParam("applicationName") String applicationName,
                                                                           @PathParam("eventCode") String eventCode)
     throws IOException {
         log.info("getEventAggregationByAppNameEventCodeAndAggType() entered applicationName:{}, eventCode:{}",
                 applicationName, eventCode);
-        SearchResponse sr = eventLogController.doAggregationAvgAndCountSearch(applicationName, eventCode);
+        Map<String, SearchResponse> sr = eventLogController.doAggregationAvgAndCountSearch(applicationName, eventCode);
         log.info("getEventAggregationByAppNameEventCodeAndAggType() searchResponse:{}", sr);
         return sr;
     }

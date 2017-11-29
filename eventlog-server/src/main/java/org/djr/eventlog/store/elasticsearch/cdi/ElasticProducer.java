@@ -28,6 +28,7 @@ public class ElasticProducer {
     @ElasticSearch
     public RestHighLevelClient produceElasticSearchHighLevelRestClient(InjectionPoint injectionPoint)
     throws IOException, NullPointerException {
+        log.debug("produceElasticSearchHighLevelRestClient() started");
         ElasticSearchConfig config = injectionPoint.getAnnotated().getAnnotation(ElasticSearchConfig.class);
         RestHighLevelClient client = null;
         if (null != config) {
