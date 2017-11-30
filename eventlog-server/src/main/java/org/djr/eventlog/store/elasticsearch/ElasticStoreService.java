@@ -69,14 +69,17 @@ public class ElasticStoreService implements EventLogStore {
         }
     }
 
-    public SearchResponse search(QueryBuilder queryBuilder, AggregationBuilder aggregationBuilder)
+    public SearchResponse search(QueryBuilder queryBuilder, AggregationBuilder... aggregationBuilders)
     throws IOException {
         try {
             SearchRequest searchRequest =
                     new SearchRequest();
             SearchSourceBuilder builder = new SearchSourceBuilder();
+            builder.size(0);
             builder.query(queryBuilder);
-            builder.aggregation(aggregationBuilder);
+            for (AggregationBuilder aggregationBuilder : aggregationBuilders) {
+                builder.aggregation(aggregationBuilder);
+            }
             searchRequest.source(builder);
             return client.search(searchRequest.searchType(SearchType.DFS_QUERY_THEN_FETCH));
         } catch (IOException ioEx) {
