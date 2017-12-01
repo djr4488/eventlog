@@ -1,5 +1,7 @@
-package org.djr.eventlog;
+package org.djr.eventlog.store;
 
+import org.djr.eventlog.EventLogController;
+import org.djr.eventlog.store.EventLogStore;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;

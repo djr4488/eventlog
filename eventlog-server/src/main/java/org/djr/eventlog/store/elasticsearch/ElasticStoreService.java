@@ -1,7 +1,7 @@
 package org.djr.eventlog.store.elasticsearch;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.djr.eventlog.EventLogStore;
+import org.djr.eventlog.store.EventLogStore;
 import org.djr.eventlog.store.elasticsearch.cdi.ElasticSearch;
 import org.djr.eventlog.store.elasticsearch.cdi.ElasticSearchConfig;
 import org.djr.eventlog.rest.EventLogRequest;

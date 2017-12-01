@@ -1,4 +1,4 @@
-package org.djr.eventlog;
+package org.djr.eventlog.store;
 
 
 import org.djr.eventlog.rest.EventLogRequest;

@@ -1,6 +1,8 @@
 package org.djr.eventlog;
 
 import org.djr.eventlog.rest.EventLogRequest;
+import org.djr.eventlog.store.AggregationService;
+import org.djr.eventlog.store.EventLogStore;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
