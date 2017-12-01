@@ -6,6 +6,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.metrics.percentiles.PercentilesMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,9 @@ public class EventLogController {
         AggregationBuilder abStats = AggregationBuilders.stats("stats")
                 .field("executeTime");
         AggregationBuilder abPercentiles = AggregationBuilders.percentiles("percentiles")
-                .field("executeTime");
+                .field("executeTime")
+                .percentiles(1, 5, 25, 50, 75, 95, 98, 99, 99.9)
+                .method(PercentilesMethod.HDR);
         Map<String, SearchResponse> results = new HashMap<>();
         aggregationService.getTodayResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
                 abStats, abPercentiles);
