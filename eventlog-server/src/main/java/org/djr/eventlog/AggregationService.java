@@ -84,4 +84,22 @@ public class AggregationService {
         executeAggregationSearch(results, eventCodeAndApplicationNameQueryBuilder(applicationName, eventCode, startMillis, endMillis),
                 "Last30Days", abs);
     }
+
+    public void getLastMonthResultsForApplicationNameAndEventCode(String applicationName, String eventCode, Map<String, SearchResponse> results,
+                                                                  AggregationBuilder... abs)
+    throws IOException {
+        long startMillis = DateTime.now().withTimeAtStartOfDay().withDayOfMonth(1).minusMonths(1).getMillis();
+        long endMillis = DateTime.now().withTimeAtStartOfDay().withDayOfMonth(1).minusDays(1).getMillis();
+        executeAggregationSearch(results, eventCodeAndApplicationNameQueryBuilder(applicationName, eventCode, startMillis, endMillis),
+                "LastMonth", abs);
+    }
+
+    public void getThisMonthResultsForApplicationNameAndEventCode(String applicationName, String eventCode, Map<String, SearchResponse> results,
+                                                                  AggregationBuilder... abs)
+    throws IOException {
+        long startMillis = DateTime.now().withTimeAtStartOfDay().withDayOfMonth(1).minusMonths(1).getMillis();
+        long endMillis = DateTime.now().withTimeAtStartOfDay().getMillis();
+        executeAggregationSearch(results, eventCodeAndApplicationNameQueryBuilder(applicationName, eventCode, startMillis, endMillis),
+                "ThisMonth", abs);
+    }
 }

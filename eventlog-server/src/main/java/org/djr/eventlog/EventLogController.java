@@ -45,12 +45,23 @@ public class EventLogController {
                 .field("executeTime");
         AggregationBuilder abCount = AggregationBuilders.count("apps_and_event_codes_count")
                 .field("executeTime");
+        AggregationBuilder abStats = AggregationBuilders.stats("apps_and_event_codes_stats")
+                .field("executeTime");
         Map<String, SearchResponse> results = new HashMap<>();
-        aggregationService.getTodayResultsForApplicationNameAndEventCode(applicationName, eventCode, results, abAvg, abCount);
-        aggregationService.getYesterdayResultsForApplicationNameAndEventCode(applicationName, eventCode, results, abAvg, abCount);
-        aggregationService.getLastWeekSameDayResultsForApplicationNameAndEventCode(applicationName, eventCode, results, abAvg, abCount);
-        aggregationService.getLast7DaysResultsForApplicationNameAndEventCode(applicationName, eventCode, results, abAvg, abCount);
-        aggregationService.getLast30DaysResultsForApplicationNameAndEventCode(applicationName, eventCode, results, abAvg, abCount);
+        aggregationService.getTodayResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
+                abAvg, abCount, abStats);
+        aggregationService.getYesterdayResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
+                abAvg, abCount, abStats);
+        aggregationService.getLastWeekSameDayResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
+                abAvg, abCount, abStats);
+        aggregationService.getLast7DaysResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
+                abAvg, abCount, abStats);
+        aggregationService.getLast30DaysResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
+                abAvg, abCount, abStats);
+        aggregationService.getLastMonthResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
+                abAvg, abCount, abStats);
+        aggregationService.getThisMonthResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
+                abAvg, abCount, abStats);
         return results;
     }
 }
