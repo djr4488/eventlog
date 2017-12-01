@@ -41,27 +41,25 @@ public class EventLogController {
     throws IOException {
         log.debug("doAggregationSearch() applicationName:{}, eventCode:{}", applicationName,
                 eventCode);
-        AggregationBuilder abAvg = AggregationBuilders.avg("apps_and_event_codes_avg")
+        AggregationBuilder abStats = AggregationBuilders.stats("stats")
                 .field("executeTime");
-        AggregationBuilder abCount = AggregationBuilders.count("apps_and_event_codes_count")
-                .field("executeTime");
-        AggregationBuilder abStats = AggregationBuilders.stats("apps_and_event_codes_stats")
+        AggregationBuilder abPercentiles = AggregationBuilders.percentiles("percentiles")
                 .field("executeTime");
         Map<String, SearchResponse> results = new HashMap<>();
         aggregationService.getTodayResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
-                abAvg, abCount, abStats);
+                abStats, abPercentiles);
         aggregationService.getYesterdayResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
-                abAvg, abCount, abStats);
+                abStats, abPercentiles);
         aggregationService.getLastWeekSameDayResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
-                abAvg, abCount, abStats);
+                abStats, abPercentiles);
         aggregationService.getLast7DaysResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
-                abAvg, abCount, abStats);
+                abStats, abPercentiles);
         aggregationService.getLast30DaysResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
-                abAvg, abCount, abStats);
+                abStats, abPercentiles);
         aggregationService.getLastMonthResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
-                abAvg, abCount, abStats);
+                abStats);
         aggregationService.getThisMonthResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
-                abAvg, abCount, abStats);
+                abStats, abPercentiles);
         return results;
     }
 }
