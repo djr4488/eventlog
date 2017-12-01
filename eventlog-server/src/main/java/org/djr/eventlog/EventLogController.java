@@ -50,21 +50,25 @@ public class EventLogController {
                 .field("executeTime")
                 .percentiles(1, 5, 25, 50, 75, 95, 98, 99, 99.9)
                 .method(PercentilesMethod.HDR);
+        AggregationBuilder abHistogram = AggregationBuilders.histogram("histogram")
+                .field("executeTime")
+                .interval(100)
+                .minDocCount(2);
         Map<String, SearchResponse> results = new HashMap<>();
         aggregationService.getTodayResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
-                abStats, abPercentiles);
+                abStats, abPercentiles, abHistogram);
         aggregationService.getYesterdayResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
-                abStats, abPercentiles);
+                abStats, abPercentiles, abHistogram);
         aggregationService.getLastWeekSameDayResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
-                abStats, abPercentiles);
+                abStats, abPercentiles, abHistogram);
         aggregationService.getLast7DaysResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
-                abStats, abPercentiles);
+                abStats, abPercentiles, abHistogram);
         aggregationService.getLast30DaysResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
-                abStats, abPercentiles);
+                abStats, abPercentiles, abHistogram);
         aggregationService.getLastMonthResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
-                abStats);
+                abStats, abPercentiles, abHistogram);
         aggregationService.getThisMonthResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
-                abStats, abPercentiles);
+                abStats, abPercentiles, abHistogram);
         return results;
     }
 }
