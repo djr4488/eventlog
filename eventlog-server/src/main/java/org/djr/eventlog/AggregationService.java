@@ -4,7 +4,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
-import org.elasticsearch.search.aggregations.metrics.avg.ParsedAvg;
+import org.elasticsearch.search.aggregations.metrics.stats.ParsedStats;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +35,7 @@ public class AggregationService {
     throws IOException {
         SearchResponse sr =
                 eventLogStore.search(queryBuilder, abs);
-        if (((ParsedAvg) sr.getAggregations().get("apps_and_event_codes_avg")).getValue() != 1.0D / 0.0) {
+        if (((ParsedStats) sr.getAggregations().get("stats")).getAvg() != 1.0D / 0.0) {
             results.put(aggregationRange, sr);
         }
     }
