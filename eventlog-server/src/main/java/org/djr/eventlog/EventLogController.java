@@ -47,13 +47,11 @@ public class EventLogController {
         AggregationBuilder abStats = AggregationBuilders.stats("stats")
                 .field("executeTime");
         AggregationBuilder abPercentiles = AggregationBuilders.percentiles("percentiles")
-                .field("executeTime")
-                .percentiles(1, 5, 25, 50, 75, 95, 98, 99, 99.9)
-                .method(PercentilesMethod.HDR);
+                .field("executeTime");
         AggregationBuilder abHistogram = AggregationBuilders.histogram("histogram")
                 .field("executeTime")
                 .interval(100)
-                .minDocCount(2);
+                .minDocCount(1);
         Map<String, SearchResponse> results = new HashMap<>();
         aggregationService.getTodayResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
                 abStats, abPercentiles, abHistogram);
