@@ -44,29 +44,30 @@ public class EventLogController {
     throws IOException {
         log.debug("doAggregationSearch() applicationName:{}, eventCode:{}", applicationName,
                 eventCode);
-        AggregationBuilder abStats = AggregationBuilders.stats("stats")
+        AggregationBuilder abStats = AggregationBuilders.extendedStats("stats")
                 .field("executeTime");
         AggregationBuilder abPercentiles = AggregationBuilders.percentiles("percentiles")
-                .field("executeTime");
+                .field("executeTime")
+                .keyed(false);
         AggregationBuilder abHistogram = AggregationBuilders.histogram("histogram")
                 .field("executeTime")
                 .interval(100)
                 .minDocCount(1);
         Map<String, SearchResponse> results = new HashMap<>();
         aggregationService.getTodayResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
-                abStats, abPercentiles, abHistogram);
+                abStats, abPercentiles);
         aggregationService.getYesterdayResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
-                abStats, abPercentiles, abHistogram);
+                abStats, abPercentiles);
         aggregationService.getLastWeekSameDayResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
-                abStats, abPercentiles, abHistogram);
+                abStats, abPercentiles);
         aggregationService.getLast7DaysResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
-                abStats, abPercentiles, abHistogram);
+                abStats, abPercentiles);
         aggregationService.getLast30DaysResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
-                abStats, abPercentiles, abHistogram);
+                abStats, abPercentiles);
         aggregationService.getLastMonthResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
-                abStats, abPercentiles, abHistogram);
+                abStats, abPercentiles);
         aggregationService.getThisMonthResultsForApplicationNameAndEventCode(applicationName, eventCode, results,
-                abStats, abPercentiles, abHistogram);
+                abStats, abPercentiles);
         return results;
     }
 }
