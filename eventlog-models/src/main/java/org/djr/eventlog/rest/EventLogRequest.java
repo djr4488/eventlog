@@ -16,17 +16,19 @@ public class EventLogRequest implements Serializable {
     private String eventCode;
     private String errorCode;
     private String eventType;
-    private Boolean alertOnError;
+    private Boolean alertOnBusinessException;
+    private Boolean alertOnSystemException;
     private Long executeTime;
     private Long interceptExecuteTime;
+    private String exceptionType;
     private Map<String, String> dataPoints;
 
     public EventLogRequest() {
     }
 
     public EventLogRequest(String trackingIdentifier, Long eventOccurredAt, String applicationName, String environment, String server, String eventCode,
-                           String errorCode, String eventType, Boolean alertOnError, Long executeTime, Long interceptExecuteTime,
-                           Map<String, String> dataPoints) {
+                           String errorCode, String eventType, Boolean alertOnBusinessException, Boolean alertOnSystemException, Long executeTime,
+                           Long interceptExecuteTime, Map<String, String> dataPoints) {
         this.trackingIdentifier = trackingIdentifier;
         this.eventOccurredAt = eventOccurredAt;
         this.applicationName = applicationName;
@@ -35,7 +37,8 @@ public class EventLogRequest implements Serializable {
         this.eventCode = eventCode;
         this.errorCode = errorCode;
         this.eventType = eventType;
-        this.alertOnError = alertOnError;
+        this.alertOnBusinessException = alertOnBusinessException;
+        this.alertOnSystemException = alertOnSystemException;
         this.executeTime = executeTime;
         this.interceptExecuteTime = interceptExecuteTime;
         this.dataPoints = dataPoints;
@@ -105,12 +108,20 @@ public class EventLogRequest implements Serializable {
         this.eventType = eventType;
     }
 
-    public Boolean isAlertOnError() {
-        return alertOnError;
+    public Boolean getAlertOnBusinessException() {
+        return alertOnBusinessException;
     }
 
-    public void setAlertOnError(Boolean alertOnError) {
-        this.alertOnError = alertOnError;
+    public void setAlertOnBusinessException(Boolean alertOnBusinessException) {
+        this.alertOnBusinessException = alertOnBusinessException;
+    }
+
+    public Boolean getAlertOnSystemException() {
+        return alertOnSystemException;
+    }
+
+    public void setAlertOnSystemException(Boolean alertOnSystemException) {
+        this.alertOnSystemException = alertOnSystemException;
     }
 
     public Long getExecuteTime() {
@@ -127,6 +138,14 @@ public class EventLogRequest implements Serializable {
 
     public void setInterceptExecuteTime(Long interceptExecuteTime) {
         this.interceptExecuteTime = interceptExecuteTime;
+    }
+
+    public String getExceptionType() {
+        return exceptionType;
+    }
+
+    public void setExceptionType(String exceptionType) {
+        this.exceptionType = exceptionType;
     }
 
     public Map<String, String> getDataPoints() {

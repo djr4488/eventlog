@@ -60,7 +60,9 @@ public class EventLogInterceptor {
         } catch (Exception ex) {
             dataPointMap.put("Exception Message", ex.getMessage());
             dataPointMap.put("Exception Type", ex.getClass().getName());
-            errCode = ex.getClass().getName() + ":" + ex.getMessage();
+            errCode = "[T]" + InterceptorUtilities.getErrorType(ex, eventLog.businessExceptions())
+                    + ":[N]" + ex.getClass().getName()
+                    + ":[M]" + ex.getMessage();
             toThrow = ex;
         }
         methodEnd = DateTime.now().getMillis();
@@ -91,8 +93,8 @@ public class EventLogInterceptor {
     private void createAndPublishEventLog(EventLog eventLog, Map<String, String> dataPointMap, String methodName,
                                           String errCode, Long exeTime, Long intExeTime) {
         EventLogRequest elr = new EventLogRequest(MDC.get(EventLogConstants.eventLogTrackingIdKey), DateTime.now().getMillis(),
-                resourceAppName, null, getServerInfo(), methodName, errCode, "Method Intercept",
-                eventLog.alertOnException(), exeTime, intExeTime - exeTime, dataPointMap);
+                resourceAppName, null, InterceptorUtilities.getServerInfo(), methodName, errCode, "Method Intercept",
+                eventLog.alertOnBusinessException(), eventLog.alertOnSystemException(), exeTime, intExeTime - exeTime, dataPointMap);
         EventLogMessage elm = new EventLogMessage(elr);
         eventController.publishEventLogMessage(elm);
     }
@@ -101,7 +103,7 @@ public class EventLogInterceptor {
         if (eventLog.generateTrackingIdForEntry()) {
             MDC.put(EventLogConstants.eventLogTrackingIdKey, UUID.randomUUID().toString());
             MDC.put(EventLogConstants.eventLogApplicationNameKey, resourceAppName);
-            MDC.put(EventLogConstants.eventLogServerKey, getServerInfo());
+            MDC.put(EventLogConstants.eventLogServerKey, InterceptorUtilities.getServerInfo());
         }
     }
 
@@ -143,7 +145,7 @@ public class EventLogInterceptor {
             boolean fieldAccessibleFlagChanged = false;
             for (Field field : fields) {
                 try {
-                    if (!isFieldAJavaCollectionOrArray(field)) {
+                    if (!InterceptorUtilities.isFieldAJavaCollectionOrArray(field)) {
                         if (!field.isAccessible()) {
                             field.setAccessible(true);
                             fieldAccessibleFlagChanged = true;
@@ -177,10 +179,6 @@ public class EventLogInterceptor {
         return dataPointMap;
     }
 
-    private boolean isFieldAJavaCollectionOrArray(Field field) {
-        return Collections.class.isAssignableFrom(field.getType()) || field.getType().isArray();
-    }
-
     private void generateDataPointMapForObjectField(Object object, Map<String, String> dataPointMap, Field field)
     throws IllegalAccessException {
         if (field.isAnnotationPresent(EventLogAttribute.class)) {
@@ -201,16 +199,5 @@ public class EventLogInterceptor {
 
     private String dataPointKeyForParameterName(String eventLogParameterName, String fieldName) {
         return (null != eventLogParameterName && !"".equals(eventLogParameterName.trim())) ? eventLogParameterName : fieldName;
-    }
-
-    private String getServerInfo() {
-        String appName = null;
-        try {
-            InetAddress inetAddress = InetAddress.getLocalHost();
-            appName = inetAddress.getHostName() + " - " + inetAddress.getHostAddress();
-        } catch (UnknownHostException uhEx) {
-            log.debug("getServerInfo() unable to get server info for naming");
-        }
-        return appName;
     }
 }

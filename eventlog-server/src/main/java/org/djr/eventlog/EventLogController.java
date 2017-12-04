@@ -1,5 +1,6 @@
 package org.djr.eventlog;
 
+import org.djr.eventlog.alert.AlertService;
 import org.djr.eventlog.rest.EventLogRequest;
 import org.djr.eventlog.store.AggregationService;
 import org.djr.eventlog.store.EventLogStore;
@@ -27,10 +28,16 @@ public class EventLogController {
     private EventLogStore eventLogStore;
     @Inject
     private AggregationService aggregationService;
+    @Inject
+    private AlertService alertService;
 
     public void doHandleEventLogRequest(EventLogRequest eventLogRequest) {
         log.debug("doHandleEventLogRequest() eventLogRequest:{}", eventLogRequest);
         eventLogStore.storeEventLog(eventLogRequest);
+        if ((eventLogRequest.getAlertOnBusinessException() || eventLogRequest.getAlertOnSystemException())
+                && null != eventLogRequest.getErrorCode()) {
+            alertService.sendAlert(eventLogRequest);
+        }
     }
 
     public SearchResponse doSearchByTrackingId(String trackingId)

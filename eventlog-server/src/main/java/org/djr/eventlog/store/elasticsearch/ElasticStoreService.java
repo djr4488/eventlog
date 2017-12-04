@@ -33,10 +33,10 @@ public class ElasticStoreService implements EventLogStore {
     private static Logger log = LoggerFactory.getLogger(ElasticStoreService.class);
     @Inject
     @ElasticSearch
-    @ElasticSearchConfig(hostsPropertyName = "EventLogController.elasticHosts",
-            portsPropertyName = "EventLogController.elasticPorts",
-            schemePropertyName = "EventLogController.elasticSchemes",
-            delineatorPropertyName = "EventLogController.delineator")
+    @ElasticSearchConfig(hostsPropertyName = "ElasticStoreService.elasticHosts",
+            portsPropertyName = "ElasticStoreService.elasticPorts",
+            schemePropertyName = "ElasticStoreService.elasticSchemes",
+            delineatorPropertyName = "ElasticStoreService.delineator")
     private RestHighLevelClient client;
 
     public void storeEventLog(EventLogRequest eventLogRequest) {

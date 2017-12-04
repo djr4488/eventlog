@@ -17,7 +17,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Target({METHOD, TYPE})
 public @interface EventLog {
-    boolean alertOnException() default false;
+    boolean alertOnBusinessException() default false;
+    boolean alertOnSystemException() default false;
     boolean generateTrackingIdForEntry() default false;
     String name() default "";
+    Class<? extends Exception>[] businessExceptions() default { Exception.class };
 }
