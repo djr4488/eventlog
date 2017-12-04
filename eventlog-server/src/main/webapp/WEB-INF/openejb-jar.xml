@@ -2,8 +2,8 @@
 <openejb-jar>
     <pojo-deployment class-name="jaxrs-application">
         <properties>
-            cxf.jaxrs.skip-provider-scanning = true
-            cxf.jaxrs.providers = org.apache.johnzon.jaxrs.JohnzonProvider
+            cxf.jaxrs.skip-provider-scanning = false
+            cxf.jaxrs.providers = org.djr.eventlog.provider.JacksonJsonProvider
         </properties>
     </pojo-deployment>
 </openejb-jar>

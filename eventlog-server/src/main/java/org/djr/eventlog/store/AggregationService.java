@@ -37,7 +37,7 @@ public class AggregationService {
     throws IOException {
         SearchResponse sr =
                 eventLogStore.search(queryBuilder, abs);
-        if (((ParsedStats) sr.getAggregations().get("stats")).getAvg() != 1.0D / 0.0) {
+        if (sr.getHits().totalHits > 0) {
             results.put(aggregationRange, sr);
         }
     }
