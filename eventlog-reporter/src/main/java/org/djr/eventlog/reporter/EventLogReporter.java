@@ -180,7 +180,7 @@ public class EventLogReporter extends ScheduledReporter {
             }
         } catch (Exception ex) {
             EventLogRequest elr = new EventLogRequest(jvmUuid, DateTime.now().getMillis(), applicationName, environment, server,
-                    "Error", ex.getMessage(), "Health Metrics", false, -1L,
+                    "Error", ex.getMessage(), "Health Metrics", false, false, -1L,
                     -1L, null);
             EventLogMessage elm = new EventLogMessage(elr);
             eventLogService.publishEventLogMessage(elm);
@@ -213,7 +213,7 @@ public class EventLogReporter extends ScheduledReporter {
         dataPointMap.put("timer-duration-unit", getDurationUnit());
         endMillis = DateTime.now().getMillis();
         EventLogRequest elr = new EventLogRequest(jvmUuid, DateTime.now().getMillis(), applicationName, environment, server,
-                name, null, "Time Metrics", false, endMillis - startMillis,
+                name, null, "Time Metrics", false, false, endMillis - startMillis,
                 -1L, dataPointMap);
         EventLogMessage elm = new EventLogMessage(elr);
         eventLogService.publishEventLogMessage(elm);
@@ -232,7 +232,7 @@ public class EventLogReporter extends ScheduledReporter {
         }
         endMillis = DateTime.now().getMillis();
         EventLogRequest elr = new EventLogRequest(jvmUuid, DateTime.now().getMillis(), applicationName, environment, server,
-                name, sysErrorCode, "Health Metrics", true, endMillis - startMillis,
+                name, sysErrorCode, "Health Metrics", true, false, endMillis - startMillis,
                 -1L, dataPointMap);
         EventLogMessage elm = new EventLogMessage(elr);
         eventLogService.publishEventLogMessage(elm);
@@ -259,7 +259,7 @@ public class EventLogReporter extends ScheduledReporter {
         dataPointMap.put("meter-rate-unit", getRateUnit());
         endMillis = DateTime.now().getMillis();
         EventLogRequest elr = new EventLogRequest(jvmUuid, DateTime.now().getMillis(), applicationName, environment, server,
-                name, null, "Meter Metrics", false, endMillis - startMillis,
+                name, null, "Meter Metrics", false, false, endMillis - startMillis,
                 -1L, dataPointMap);
         EventLogMessage elm = new EventLogMessage(elr);
         eventLogService.publishEventLogMessage(elm);
@@ -284,7 +284,7 @@ public class EventLogReporter extends ScheduledReporter {
         dataPointMap.put("histogram-999th-percentile", Double.toString(snapshot.get999thPercentile()));
         endMillis = DateTime.now().getMillis();
         EventLogRequest elr = new EventLogRequest(jvmUuid, DateTime.now().getMillis(), applicationName, environment, server,
-                name, null, "Histogram Metrics", false, endMillis - startMillis,
+                name, null, "Histogram Metrics", false, false, endMillis - startMillis,
                 -1L, dataPointMap);
         EventLogMessage elm = new EventLogMessage(elr);
         eventLogService.publishEventLogMessage(elm);
@@ -298,7 +298,7 @@ public class EventLogReporter extends ScheduledReporter {
         dataPointMap.put("counter-count", Long.toString(counter.getCount()));
         endMillis = DateTime.now().getMillis();
         EventLogRequest elr = new EventLogRequest(jvmUuid, DateTime.now().getMillis(), applicationName, environment, server,
-                name, null, "Counter Metrics", false, endMillis - startMillis,
+                name, null, "Counter Metrics", false, false, endMillis - startMillis,
                 -1L, dataPointMap);
         EventLogMessage elm = new EventLogMessage(elr);
         eventLogService.publishEventLogMessage(elm);
@@ -316,20 +316,20 @@ public class EventLogReporter extends ScheduledReporter {
             }
         }
         if (jvmGuages.size() > 0) {
-            publishGuageLog("JVM Metrics Guages", jvmGuages, jvmUuid);
+            publishGaugeLog("JVM Metrics Gauges", jvmGuages, jvmUuid);
         }
         if (nonJvmGuages.size() > 0) {
-            publishGuageLog("Non JVM Guages", nonJvmGuages, jvmUuid);
+            publishGaugeLog("Non JVM Gauges", nonJvmGuages, jvmUuid);
         }
     }
 
-    private void publishGuageLog(String name, Map<String, String> dataPointMap, String jvmUuid) {
+    private void publishGaugeLog(String name, Map<String, String> dataPointMap, String jvmUuid) {
         log.debug("logGauge() name:{}, dataPointMap:{}, jvmUuid:{}", name, dataPointMap.size(), jvmUuid);
         long startMillis = DateTime.now().getMillis();
         long endMillis = 0L;
         endMillis = DateTime.now().getMillis();
         EventLogRequest elr = new EventLogRequest(jvmUuid, DateTime.now().getMillis(), applicationName, environment, server,
-                name, null, "Guage Metrics", false, endMillis - startMillis,
+                name, null, "Gauge Metrics", false, false, endMillis - startMillis,
                 -1L, dataPointMap);
         EventLogMessage elm = new EventLogMessage(elr);
         eventLogService.publishEventLogMessage(elm);

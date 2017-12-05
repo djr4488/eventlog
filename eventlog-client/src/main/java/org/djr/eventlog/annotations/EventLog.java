@@ -1,5 +1,6 @@
 package org.djr.eventlog.annotations;
 
+import javax.enterprise.util.Nonbinding;
 import javax.interceptor.InterceptorBinding;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Inherited;
@@ -21,5 +22,6 @@ public @interface EventLog {
     boolean alertOnSystemException() default false;
     boolean generateTrackingIdForEntry() default false;
     String name() default "";
+    @Nonbinding
     Class[] businessExceptions() default {  };
 }
