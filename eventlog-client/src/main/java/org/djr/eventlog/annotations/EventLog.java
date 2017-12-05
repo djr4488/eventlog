@@ -21,5 +21,5 @@ public @interface EventLog {
     boolean alertOnSystemException() default false;
     boolean generateTrackingIdForEntry() default false;
     String name() default "";
-    Class<? extends Exception>[] businessExceptions() default { Exception.class };
+    Class[] businessExceptions() default {  };
 }

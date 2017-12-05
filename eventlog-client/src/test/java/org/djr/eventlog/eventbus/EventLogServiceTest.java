@@ -35,7 +35,7 @@ public class EventLogServiceTest {
     @Test
     public void testEventLogListener() {
         EventLogRequest eventLogRequest = new EventLogRequest("123", 123L, "app",
-                "env", "svr", "ec", "err", "evt", false,
+                "env", "svr", "ec", "err", "evt", false, false,
                 123L, 121L, null);
         EventLogMessage eventLogMessage = new EventLogMessage(eventLogRequest);
         eventLogService.publishEventLogMessage(eventLogMessage);

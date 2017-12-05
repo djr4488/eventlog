@@ -60,7 +60,7 @@ public class EventLogEndpointTest {
 
     private EventLogRequest generateFakeEventLogRequest() {
         return new EventLogRequest("123", 123L, "app", "env",
-                "svr", "evtCd", "errCd", "evtType", false,
+                "svr", "evtCd", "errCd", "evtType", false, false,
                 123L, 124L, null);
     }
 }
