@@ -1,6 +1,7 @@
 package org.djr.eventlog.store.elasticsearch.cdi;
 
 import org.apache.http.HttpHost;
+import org.djr.eventlog.EventLogProperties;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
@@ -21,7 +22,7 @@ import java.util.Properties;
 public class ElasticProducer {
     private static Logger log = LoggerFactory.getLogger(ElasticProducer.class);
     @Inject
-    @ElasticProperties
+    @EventLogProperties(name = "elastic.properties")
     private Properties properties;
 
     @Produces

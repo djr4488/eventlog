@@ -13,7 +13,7 @@ import java.util.Properties;
 public class AlertService {
     private static final Logger log = LoggerFactory.getLogger(AlertService.class);
     @Inject
-    @EventLogProperties
+    @EventLogProperties(name = "eventlog.properties")
     private Properties properties;
 
     public void sendAlert(EventLogRequest eventLogRequest) {

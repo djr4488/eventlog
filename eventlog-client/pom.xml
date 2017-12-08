@@ -35,7 +35,7 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>org.djr.retrofitee</groupId>
+            <groupId>org.djr.retrofit</groupId>
             <artifactId>retrofitee-core</artifactId>
             <version>1.0.0-SNAPSHOT</version>
             <scope>compile</scope>
