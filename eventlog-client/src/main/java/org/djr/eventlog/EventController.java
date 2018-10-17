@@ -3,7 +3,6 @@ package org.djr.eventlog;
 import com.google.common.eventbus.EventBus;
 import org.djr.eventlog.eventbus.EventLogListener;
 import org.djr.eventlog.eventbus.EventLogMessage;
-import org.djr.eventlog.eventbus.client.EventLogClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
